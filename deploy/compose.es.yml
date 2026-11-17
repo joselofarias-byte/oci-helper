@@ -4,7 +4,7 @@ services:
     build:
       context: ..
       dockerfile: Dockerfile.es
-    image: oci-helper-es:3.5.1-es1
+    image: oci-helper-es:3.5.1-es2
     restart: unless-stopped
     ports:
       - "127.0.0.1:8818:8818"
@@ -22,7 +22,7 @@ services:
       - ALL
     read_only: true
     tmpfs:
-      - /tmp:rw,nosuid,size=256m
+      - /tmp:rw,exec,nosuid,nodev,mode=1777,size=256m
     mem_limit: 1536m
     pids_limit: 256
     logging:

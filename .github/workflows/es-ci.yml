@@ -8,7 +8,11 @@ permissions:
   contents: read
 jobs:
   verificar:
-    runs-on: ubuntu-24.04
+    strategy:
+      fail-fast: false
+      matrix:
+        runner: [ubuntu-24.04, ubuntu-24.04-arm]
+    runs-on: ${{ matrix.runner }}
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
@@ -23,4 +27,9 @@ jobs:
       - run: npm ci --ignore-scripts
       - run: npm run check:locale
       - run: bash -n scripts/instalar-es.sh
-      - run: mvn -B -Dtest=JwtSecurityTest,KeyStorageSecurityTest,AccessSecurityTest verify
+      - run: mvn -B -Dtest=JwtSecurityTest,KeyStorageSecurityTest,AccessSecurityTest,SQLiteRuntimeTest verify
+      - run: bash -n scripts/comprobar-contenedor.sh
+      - name: Construir imagen nativa
+        run: docker build -f Dockerfile.es -t oci-helper-es:3.5.1-es2 .
+      - name: Probar SQLite y arranque real del contenedor
+        run: bash scripts/comprobar-contenedor.sh

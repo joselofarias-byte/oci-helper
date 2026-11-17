@@ -1,6 +1,7 @@
 #!/usr/bin/env bash
 set -Eeuo pipefail
 umask 077
+export COMPOSE_BAKE=false
 REPO_DIR="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")/.." && pwd)"
 COMPOSE="$REPO_DIR/deploy/compose.es.yml"
 ENV_FILE="$REPO_DIR/deploy/.env"
@@ -25,7 +26,7 @@ for ((attempt=1;attempt<=60;attempt++)); do
   sleep 2
 done
 if (( READY != 1 )); then
-  docker compose --env-file "$ENV_FILE" -f "$COMPOSE" logs --tail 100 panel
+  docker compose --env-file "$ENV_FILE" -f "$COMPOSE" logs --tail 250 panel
   echo 'El panel no respondió. Consulta los registros anteriores.' >&2
   exit 1
 fi
