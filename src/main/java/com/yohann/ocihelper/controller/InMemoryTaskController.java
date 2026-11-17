@@ -120,7 +120,7 @@ public class InMemoryTaskController {
         }, 0, 60, TimeUnit.SECONDS);
 
         log.info("[ChangeIpTask] added taskId={} instance={}", taskId, params.getInstanceId());
-        return ResponseData.successData("换IP任务已添加，每60秒执行一次");
+        return ResponseData.successData("Tarea de cambio de IP añadida; se ejecuta cada 60 segundos");
     }
 
     /**
@@ -142,7 +142,7 @@ public class InMemoryTaskController {
                     r.setRegion(m.getRegion());
                     r.setInstanceName(m.getInstanceName());
                     r.setInstanceId(m.getInstanceId());
-                    r.setCidrList(m.getCidrList().isEmpty() ? "随机IP" : String.join(", ", m.getCidrList()));
+                    r.setCidrList(m.getCidrList().isEmpty() ? "IP aleatoria" : String.join(", ", m.getCidrList()));
                     r.setPaused(m.getPaused());
                     r.setCreateTime(m.getCreateTime());
                     Object cnt = TEMP_MAP.get(CHANGE_IP_CNT_KEY + m.getId());
@@ -151,7 +151,7 @@ public class InMemoryTaskController {
                 })
                 .collect(Collectors.toList());
 
-        return ResponseData.successData(buildPage(all, params), "查询成功");
+        return ResponseData.successData(buildPage(all, params), "Consulta completada");
     }
 
     /**
@@ -165,7 +165,7 @@ public class InMemoryTaskController {
             if (m != null)
                 m.setPaused(1);
         });
-        return ResponseData.successData("已暂停");
+        return ResponseData.successData("En pausa");
     }
 
     /**
@@ -199,7 +199,7 @@ public class InMemoryTaskController {
                 }
             }, 0, 60, TimeUnit.SECONDS);
         });
-        return ResponseData.successData("已恢复");
+        return ResponseData.successData("Reanudado");
     }
 
     /**
@@ -212,7 +212,7 @@ public class InMemoryTaskController {
             CHANGE_IP_TASKS.remove(id);
             TEMP_MAP.remove(CHANGE_IP_CNT_KEY + id);
         });
-        return ResponseData.successData("已删除");
+        return ResponseData.successData("Eliminado");
     }
 
     // =========================================================================
@@ -282,7 +282,7 @@ public class InMemoryTaskController {
         }, 0, 60, TimeUnit.SECONDS);
 
         log.info("[UpdateCfgTask] added taskId={} instance={}", taskId, params.getInstanceId());
-        return ResponseData.successData("修改配置任务已添加，每60秒执行一次");
+        return ResponseData.successData("Tarea de configuración añadida; se ejecuta cada 60 segundos");
     }
 
     /**
@@ -314,7 +314,7 @@ public class InMemoryTaskController {
                 })
                 .collect(Collectors.toList());
 
-        return ResponseData.successData(buildPage(all, params), "查询成功");
+        return ResponseData.successData(buildPage(all, params), "Consulta completada");
     }
 
     /**
@@ -328,7 +328,7 @@ public class InMemoryTaskController {
             if (m != null)
                 m.setPaused(1);
         });
-        return ResponseData.successData("已暂停");
+        return ResponseData.successData("En pausa");
     }
 
     /**
@@ -370,7 +370,7 @@ public class InMemoryTaskController {
                 }
             }, 0, 60, TimeUnit.SECONDS);
         });
-        return ResponseData.successData("已恢复");
+        return ResponseData.successData("Reanudado");
     }
 
     /**
@@ -383,7 +383,7 @@ public class InMemoryTaskController {
             UPDATE_CFG_TASKS.remove(id);
             TEMP_MAP.remove(UPDATE_CFG_CNT_KEY + id);
         });
-        return ResponseData.successData("已删除");
+        return ResponseData.successData("Eliminado");
     }
 
     // =========================================================================

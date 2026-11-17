@@ -1,0 +1,35 @@
+name: Validar versión en español
+on:
+  push:
+    branches: [jolufasoft/es-seguro]
+  pull_request:
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  verificar:
+    strategy:
+      fail-fast: false
+      matrix:
+        runner: [ubuntu-24.04, ubuntu-24.04-arm]
+    runs-on: ${{ matrix.runner }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '21'
+          cache: maven
+      - run: npm ci --ignore-scripts
+      - run: npm run check:locale
+      - run: bash -n scripts/instalar-es.sh
+      - run: mvn -B -Dtest=JwtSecurityTest,KeyStorageSecurityTest,AccessSecurityTest,SQLiteRuntimeTest,IpSecurityLockoutTest verify
+      - run: bash -n scripts/comprobar-contenedor.sh
+      - name: Construir imagen nativa
+        run: docker build -f Dockerfile.es -t oci-helper-es:3.5.1-es3 .
+      - name: Probar SQLite y arranque real del contenedor
+        run: bash scripts/comprobar-contenedor.sh

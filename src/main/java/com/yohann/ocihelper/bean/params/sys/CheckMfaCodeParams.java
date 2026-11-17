@@ -14,6 +14,6 @@ import jakarta.validation.constraints.NotBlank;
 @Data
 public class CheckMfaCodeParams {
 
-    @NotBlank(message = "mfaCode不能为空")
+    @NotBlank(message = "El código MFA es obligatorio")
     private String mfaCode;
 }

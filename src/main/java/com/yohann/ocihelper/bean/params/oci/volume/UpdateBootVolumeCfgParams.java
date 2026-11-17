@@ -18,8 +18,8 @@ import jakarta.validation.constraints.NotBlank;
 @Data
 public class UpdateBootVolumeCfgParams extends GetInstanceCfgInfoParams {
 
-    @NotBlank(message = "引导卷大小不能为空")
+    @NotBlank(message = "El tamaño del volumen de arranque es obligatorio")
     private String bootVolumeSize;
-    @NotBlank(message = "引导卷VPU不能为空")
+    @NotBlank(message = "Las VPU del volumen de arranque son obligatorias")
     private String bootVolumeVpu;
 }

@@ -85,6 +85,9 @@ public class InstanceServiceImpl implements IInstanceService {
     @Value("${oci-cfg.boot-broadcast-channel}")
     private String bootBroadcastChannel;
 
+    @Value("${oci-cfg.broadcast-enabled:false}")
+    private boolean broadcastEnabled;
+
     private static final String LEGACY_MESSAGE_TEMPLATE =
             "【开机任务】 \n\n🎉 用户：[%s] 开机成功 🎉\n" +
                     "时间： %s\n" +
@@ -124,7 +127,7 @@ public class InstanceServiceImpl implements IInstanceService {
                             .build())
                     .collect(Collectors.toList());
         } catch (Exception e) {
-            throw new OciException(-1, "获取实例信息失败");
+            throw new OciException(-1, "No se pudo obtener la instancia");
         }
 
     }
@@ -161,7 +164,7 @@ public class InstanceServiceImpl implements IInstanceService {
             if (instanceDetail.isSuccess()) {
                 log.info("---------------- 🎉 用户:[{}]开机成功,CPU类型:{},公网IP: {},root密码: {} 🎉 ----------------",
                         instanceDetail.getUsername(), instanceDetail.getArchitecture(),
-                        instanceDetail.getPublicIp(), instanceDetail.getRootPassword());
+                        instanceDetail.getPublicIp(), "[omitida]");
                 String message = String.format(LEGACY_MESSAGE_TEMPLATE,
                         instanceDetail.getUsername(),
                         LocalDateTime.now().format(DateTimeFormatter.ofPattern(DatePattern.NORM_DATETIME_PATTERN)),
@@ -181,7 +184,7 @@ public class InstanceServiceImpl implements IInstanceService {
 
                 // Legacy broadcast push (per-instance, unchanged)
                 virtualExecutor.execute(() -> {
-                    if (Arrays.asList("ARM", "AMD").contains(instanceDetail.getArchitecture())) {
+                    if (broadcastEnabled && Arrays.asList("ARM", "AMD").contains(instanceDetail.getArchitecture())) {
                         String arch = instanceDetail.getArchitecture().toLowerCase();
                         try (HttpResponse response = HttpRequest.get(bootBroadcastUrl)
                                 .form("region", OciRegionsEnum.getKeyById(instanceDetail.getRegion()))
@@ -205,7 +208,7 @@ public class InstanceServiceImpl implements IInstanceService {
         }
 
         // TG通道广播：每执行轮仅发送一次，所有成功实例
-        if (!successList.isEmpty() && isCanBroadcast(successList.get(0), currentCount)) {
+        if (broadcastEnabled && !successList.isEmpty() && isCanBroadcast(successList.get(0), currentCount)) {
             virtualExecutor.execute(() -> {
 
                 // 通过OCI API实时获取账户类型
@@ -310,7 +313,7 @@ public class InstanceServiceImpl implements IInstanceService {
             log.error("用户:[{}],区域:[{}],实例:[{}] 获取实例配置信息失败,原因:{}",
                     sysUserDTO.getUsername(), sysUserDTO.getOciCfg().getRegion(),
                     instanceName, e.getLocalizedMessage(), e);
-            throw new OciException(-1, "获取实例配置信息失败");
+            throw new OciException(-1, "No se pudo obtener la configuración de instancia");
         }
     }
 
@@ -319,7 +322,7 @@ public class InstanceServiceImpl implements IInstanceService {
         try (OracleInstanceFetcher fetcher = new OracleInstanceFetcher(sysUserDTO)) {
             List<Vcn> vcns = fetcher.listVcn();
             if (null == vcns || vcns.isEmpty()) {
-                throw new OciException(-1, "当前用户未创建VCN,无法放行安全列表");
+                throw new OciException(-1, "No hay una VCN creada para abrir las listas de seguridad");
             }
             vcns.parallelStream().forEach(x -> {
                 fetcher.releaseSecurityRule(x, 0, "0.0.0.0/0", "::/0");
@@ -330,7 +333,7 @@ public class InstanceServiceImpl implements IInstanceService {
             log.error("用户:[{}],区域:[{}],放行安全列表所有端口及协议,原因:{}",
                     sysUserDTO.getUsername(), sysUserDTO.getOciCfg().getRegion(),
                     e.getLocalizedMessage(), e);
-            throw new OciException(-1, "放行安全列表所有端口及协议失败");
+            throw new OciException(-1, "No se pudieron abrir todos los puertos y protocolos");
         }
     }
 
@@ -351,7 +354,7 @@ public class InstanceServiceImpl implements IInstanceService {
             log.error("用户:[{}],区域:[{}],实例:[{}] 附加 IPV6 失败,原因:{}",
                     sysUserDTO.getUsername(), sysUserDTO.getOciCfg().getRegion(),
                     instanceName, e.getLocalizedMessage(), e);
-            throw new OciException(-1, "附加 IPV6 失败");
+            throw new OciException(-1, "No se pudo añadir IPv6");
         }
     }
 
@@ -367,7 +370,7 @@ public class InstanceServiceImpl implements IInstanceService {
             log.error("用户:[{}],区域:[{}],实例:[{}] 修改名称失败,原因:{}",
                     sysUserDTO.getUsername(), sysUserDTO.getOciCfg().getRegion(),
                     instanceName, e.getLocalizedMessage(), e);
-            throw new OciException(-1, "修改实例名称失败");
+            throw new OciException(-1, "No se pudo cambiar el nombre de instancia");
         }
     }
 
@@ -384,7 +387,7 @@ public class InstanceServiceImpl implements IInstanceService {
             log.error("用户:[{}],区域:[{}],实例:[{}] 更新 root 密码标签失败,原因:{}",
                     sysUserDTO.getUsername(), sysUserDTO.getOciCfg().getRegion(),
                     instanceName, e.getLocalizedMessage(), e);
-            throw new OciException(-1, "更新 root 密码标签失败");
+            throw new OciException(-1, "No se pudo actualizar la etiqueta de contraseña de root");
         }
     }
 
@@ -400,7 +403,7 @@ public class InstanceServiceImpl implements IInstanceService {
             log.error("用户:[{}],区域:[{}],实例:[{}] 修改实例配置失败,原因:{}",
                     sysUserDTO.getUsername(), sysUserDTO.getOciCfg().getRegion(),
                     instanceName, e.getLocalizedMessage(), e);
-            throw new OciException(-1, "修改实例配置失败");
+            throw new OciException(-1, "No se pudo modificar la configuración de instancia");
         }
     }
 
@@ -417,7 +420,7 @@ public class InstanceServiceImpl implements IInstanceService {
             log.error("用户:[{}],区域:[{}],引导卷:[{}] 修改引导卷配置失败,原因:{}",
                     sysUserDTO.getUsername(), sysUserDTO.getOciCfg().getRegion(),
                     bootVolumeName, e.getLocalizedMessage(), e);
-            throw new OciException(-1, "修改引导卷配置失败");
+            throw new OciException(-1, "No se pudo modificar el volumen de arranque");
         }
     }
 
@@ -437,7 +440,7 @@ public class InstanceServiceImpl implements IInstanceService {
                 instanceName = instance.getDisplayName();
                 if (!instance.getShape().contains(ArchitectureEnum.AMD.getShapeDetail())) {
                     log.error("【一键开启下行500Mbps任务】实例Shape: [{}] 不支持一键开启下行500Mbps", instance.getShape());
-                    throw new OciException(-1, "该实例不支持一键开启下行500Mbps");
+                    throw new OciException(-1, "Esta instancia no admite la activación de 500 Mbps");
                 }
 
                 Vcn vcn = fetcher.getVcnByInstanceId(instanceId);
@@ -506,7 +509,7 @@ public class InstanceServiceImpl implements IInstanceService {
                             Vnic xvnic = fetcher.getVnicByInstanceId(x.getId());
                             if (StrUtil.isNotBlank(xvnic.getRouteTableId()) && xvnic.getRouteTableId().equals(routeTable.getId())
                                     && !x.getId().equals(instanceId)) {
-                                throw new OciException(-1, "已有其他免费AMD实例绑定NAT路由表");
+                                throw new OciException(-1, "Otra instancia AMD gratuita ya utiliza la tabla de rutas NAT");
                             }
                         }
                     }
@@ -584,7 +587,7 @@ public class InstanceServiceImpl implements IInstanceService {
                         log.warn("【一键开启下行500Mbps任务】第 " + retryCount + " 次创建网络负载平衡器失败,重试中...");
                         if (retryCount >= MAX_RETRY) {
                             log.error("【一键开启下行500Mbps任务】创建网络负载平衡器失败次数超过 " + MAX_RETRY + " 次,终止任务");
-                            throw new OciException(-1, "创建网络负载平衡器重试失败次数超过限制", e);
+                            throw new OciException(-1, "Se agotaron los reintentos de creación del balanceador", e);
                         }
                         Thread.sleep(30000);
                     }
@@ -681,7 +684,7 @@ public class InstanceServiceImpl implements IInstanceService {
 
                 if (!instance.getShape().contains(ArchitectureEnum.AMD.getShapeDetail())) {
                     log.error("【关闭实例下行500Mbps任务】实例Shape: [{}] 不支持一键开启下行500Mbps", instance.getShape());
-                    throw new OciException(-1, "该实例不支持开启下行500Mbps");
+                    throw new OciException(-1, "Esta instancia no admite 500 Mbps");
                 }
 
                 List<RouteTable> routeTableList = virtualNetworkClient.listRouteTables(ListRouteTablesRequest.builder()
@@ -690,7 +693,7 @@ public class InstanceServiceImpl implements IInstanceService {
                         .lifecycleState(Available)
                         .build()).getItems();
                 if (CollectionUtil.isEmpty(routeTableList)) {
-                    throw new OciException(-1, "路由表列表为空");
+                    throw new OciException(-1, "La lista de tablas de rutas está vacía");
                 }
 
                 // Nat网关
@@ -825,7 +828,7 @@ public class InstanceServiceImpl implements IInstanceService {
         } catch (Exception e) {
             log.error("【更改实例Shape任务】用户:[{}],区域:[{}],实例ID:[{}] 更新 Shape 为:[{}] 失败❌",
                     sysUserDTO.getUsername(), sysUserDTO.getOciCfg().getRegion(), params.getInstanceId(), params.getShape(), e);
-            throw new OciException(-1, "更新实例 Shape 为:" + params.getShape() + " 失败");
+            throw new OciException(-1, "No se pudo cambiar el tipo de instancia a: " + params.getShape() + "");
         }
     }
 

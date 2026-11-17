@@ -17,8 +17,8 @@ import java.util.List;
 @Data
 public class TerminateBootVolumeParams {
 
-    @NotBlank(message = "配置id不能为空")
+    @NotBlank(message = "El ID de configuración es obligatorio")
     private String ociCfgId;
-    @NotEmpty(message = "引导卷id不能为空")
+    @NotEmpty(message = "El ID del volumen de arranque es obligatorio")
     private List<String> bootVolumeIds;
 }

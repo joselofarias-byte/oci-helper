@@ -19,8 +19,7 @@ import org.springframework.web.socket.server.standard.ServerEndpointExporter;
 public class WebSocketConfig implements WebSocketConfigurer {
     @Override
     public void registerWebSocketHandlers(WebSocketHandlerRegistry registry) {
-        registry.addHandler(new LogWebSocketHandler(), "/logs")
-                .setAllowedOrigins("*");
+        registry.addHandler(new LogWebSocketHandler(), "/logs");
     }
 
     @Bean

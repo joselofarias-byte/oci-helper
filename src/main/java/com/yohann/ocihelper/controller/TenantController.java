@@ -38,43 +38,43 @@ public class TenantController {
     @RequestMapping("deleteUser")
     public ResponseData<Void> deleteUser(@Validated @RequestBody UpdateUserBasicParams params) {
         tenantService.deleteUser(params);
-        return ResponseData.successData("删除用户成功");
+        return ResponseData.successData("Usuario eliminado");
     }
 
     @RequestMapping("deleteMfaDevice")
     public ResponseData<Void> deleteMfaDevice(@Validated @RequestBody UpdateUserBasicParams params) {
         tenantService.deleteMfaDevice(params);
-        return ResponseData.successData("清除 MFA 设备成功");
+        return ResponseData.successData("Dispositivos MFA eliminados");
     }
 
     @RequestMapping("deleteApiKey")
     public ResponseData<Void> deleteApiKey(@Validated @RequestBody UpdateUserBasicParams params) {
         tenantService.deleteApiKey(params);
-        return ResponseData.successData("清除所有 API 成功");
+        return ResponseData.successData("Claves API eliminadas");
     }
 
         @RequestMapping("resetPassword")
     public ResponseData<String> resetPassword(@Validated @RequestBody UpdateUserBasicParams params) {
         String newPassword = tenantService.resetPassword(params);
-        return ResponseData.successData(newPassword, "重置用户密码成功");
+        return ResponseData.successData(newPassword, "Contraseña de usuario restablecida");
     }
 
     @RequestMapping("updateUserInfo")
     public ResponseData<Void> updateUserInfo(@Validated @RequestBody UpdateUserInfoParams params) {
         tenantService.updateUserInfo(params);
-        return ResponseData.successData("更新用户信息成功");
+        return ResponseData.successData("Usuario actualizado");
     }
 
     @RequestMapping("updatePwdEx")
     public ResponseData<Void> updatePwdEx(@Validated @RequestBody UpdatePwdExpirationPolicyParams params) {
         tenantService.updatePwdExpirationPolicy(params);
-        return ResponseData.successData("更新密码过期时间成功");
+        return ResponseData.successData("Vencimiento de contraseña actualizado");
     }
 
     @RequestMapping("updateNotificationRecipients")
     public ResponseData<Void> updateNotificationRecipients(@Validated @RequestBody UpdateNotificationRecipientsParams params) {
         tenantService.updateNotificationRecipients(params);
-        return ResponseData.successData("更新域通知收件人成功");
+        return ResponseData.successData("Destinatarios del dominio actualizados");
     }
 
 }

@@ -16,6 +16,6 @@ import java.util.List;
 @Data
 public class UploadCfgParams {
 
-    @NotEmpty(message = "文件列表不能为空")
+    @NotEmpty(message = "La lista de archivos es obligatoria")
     private List<MultipartFile> fileList;
 }

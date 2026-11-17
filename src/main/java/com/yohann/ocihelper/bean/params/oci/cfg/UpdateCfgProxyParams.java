@@ -14,7 +14,7 @@ import java.util.List;
 public class UpdateCfgProxyParams {
 
     /** 需要更新的配置 ID 列表 */
-    @NotEmpty(message = "配置 ID 列表不能为空")
+    @NotEmpty(message = "La lista de ID de configuración es obligatoria")
     private List<String> idList;
 
     /**

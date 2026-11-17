@@ -16,8 +16,8 @@ import java.util.List;
 @Data
 public class RemoveVcnParams {
 
-    @NotEmpty(message = "vcnId列表不能为空")
+    @NotEmpty(message = "La lista de ID de VCN es obligatoria")
     private List<String> vcnIds;
-    @NotBlank(message = "配置id不能为空")
+    @NotBlank(message = "El ID de configuración es obligatorio")
     private String ociCfgId;
 }

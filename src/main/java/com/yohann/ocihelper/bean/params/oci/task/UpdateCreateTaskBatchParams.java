@@ -16,35 +16,35 @@ import java.util.List;
 public class UpdateCreateTaskBatchParams {
 
     /** IDs of the tasks to update */
-    @NotEmpty(message = "任务ID列表不能为空")
+    @NotEmpty(message = "La lista de ID de tareas es obligatoria")
     private List<String> taskIds;
 
     /** CPU cores */
-    @NotBlank(message = "CPU不能为空")
+    @NotBlank(message = "La CPU es obligatoria")
     private String ocpus;
 
     /** Memory in GB */
-    @NotBlank(message = "内存不能为空")
+    @NotBlank(message = "La memoria es obligatoria")
     private String memory;
 
     /** Boot-volume size in GB */
-    @NotNull(message = "磁盘空间不能为空")
+    @NotNull(message = "El espacio en disco es obligatorio")
     private Integer disk;
 
     /** Instance shape / architecture */
-    @NotBlank(message = "系统架构不能为空")
+    @NotBlank(message = "La arquitectura es obligatoria")
     private String architecture;
 
     /** Polling interval in seconds */
-    @NotNull(message = "时间间隔不能为空")
+    @NotNull(message = "El intervalo es obligatorio")
     private Integer interval;
 
     /** Number of instances to create */
-    @NotNull(message = "创建数目不能为空")
+    @NotNull(message = "La cantidad de instancias es obligatoria")
     private Integer createNumbers;
 
     /** OS image keyword */
-    @NotBlank(message = "系统类型不能为空")
+    @NotBlank(message = "El sistema operativo es obligatorio")
     private String operationSystem;
 
     /** root password set via freeform tag */

@@ -52,13 +52,13 @@ public class OciController {
 
     @PostMapping(path = "/userPage")
     public ResponseData<Page<OciUserListRsp>> userPage(@Validated @RequestBody GetOciUserListParams params) {
-        return ResponseData.successData(ociService.userPage(params), "获取用户分页成功");
+        return ResponseData.successData(ociService.userPage(params), "Lista de usuarios obtenida");
     }
 
     @PostMapping(path = "/addCfg")
     public ResponseData<Void> addCfg(@Validated AddCfgParams params) {
         ociService.addCfg(params);
-        return ResponseData.successData("新增配置成功");
+        return ResponseData.successData("Configuración añadida");
     }
 
     @PostMapping(path = "/updateCfgName")
@@ -70,7 +70,7 @@ public class OciController {
     @PostMapping(path = "/updateCfgProxy")
     public ResponseData<Void> updateCfgProxy(@Validated @RequestBody UpdateCfgProxyParams params) {
         ociService.updateCfgProxy(params);
-        return ResponseData.successData("更新代理配置成功");
+        return ResponseData.successData("Proxy actualizado");
     }
 
     @PostMapping(path = "/uploadCfg")
@@ -82,71 +82,71 @@ public class OciController {
     @PostMapping(path = "/removeCfg")
     public ResponseData<Void> removeCfg(@Validated @RequestBody IdListParams params) {
         ociService.removeCfg(params);
-        return ResponseData.successData("删除配置成功");
+        return ResponseData.successData("Configuración eliminada");
     }
 
     @PostMapping(path = "/createInstance")
     public ResponseData<Void> createInstance(@Validated @RequestBody CreateInstanceParams params) {
         ociService.createInstance(params);
-        return ResponseData.successData("创建开机任务成功");
+        return ResponseData.successData("Tarea de creación añadida");
     }
 
     @PostMapping(path = "/details")
     public ResponseData<OciCfgDetailsRsp> details(@Validated @RequestBody GetOciCfgDetailsParams params) {
-        return ResponseData.successData(ociService.details(params), "获取配置详情成功");
+        return ResponseData.successData(ociService.details(params), "Detalles de configuración obtenidos");
     }
 
     @PostMapping(path = "/changeIp")
     public ResponseData<Void> changeIp(@Validated @RequestBody ChangeIpParams params) {
         ociService.changeIp(params);
-        return ResponseData.successData("创建实例更换IP任务成功");
+        return ResponseData.successData("Tarea de cambio de IP creada");
     }
 
     @PostMapping(path = "/stopCreate")
     public ResponseData<Void> stopCreate(@Validated @RequestBody StopCreateParams params) {
         ociService.stopCreate(params);
-        return ResponseData.successData("停止开机任务成功");
+        return ResponseData.successData("Tarea de creación detenida");
     }
 
     @PostMapping(path = "/stopChangeIp")
     public ResponseData<Void> stopChangeIp(@Validated @RequestBody StopChangeIpParams params) {
         ociService.stopChangeIp(params);
-        return ResponseData.successData("停止更换IP任务成功");
+        return ResponseData.successData("Tarea de cambio de IP detenida");
     }
 
     @PostMapping(path = "/createTaskPage")
     public ResponseData<Page<CreateTaskRsp>> createTaskPage(@Validated @RequestBody CreateTaskPageParams params) {
-        return ResponseData.successData(ociService.createTaskPage(params), "获取开机任务列表成功");
+        return ResponseData.successData(ociService.createTaskPage(params), "Tareas de creación obtenidas");
     }
 
         @PostMapping(path = "/stopCreateBatch")
     public ResponseData<Void> stopCreateBatch(@Validated @RequestBody IdListParams params) {
         ociService.stopCreateBatch(params);
-        return ResponseData.successData("停止开机任务成功");
+        return ResponseData.successData("Tarea de creación detenida");
     }
 
         @PostMapping(path = "/updateCreateTask")
     public ResponseData<Void> updateCreateTask(@Validated @RequestBody UpdateCreateTaskParams params) {
         ociService.updateCreateTask(params);
-        return ResponseData.successData("修改开机任务成功");
+        return ResponseData.successData("Tarea de creación actualizada");
     }
 
     @PostMapping(path = "/updateCreateTaskBatch")
     public ResponseData<Void> updateCreateTaskBatch(@Validated @RequestBody UpdateCreateTaskBatchParams params) {
         virtualExecutor.execute(() -> ociService.updateCreateTaskBatch(params));
-        return ResponseData.successData("批量修改开机任务已提交，正在错开重启中…");
+        return ResponseData.successData("Cambios enviados; las tareas se reiniciarán de forma escalonada…");
     }
 
     @PostMapping(path = "/pauseCreateBatch")
     public ResponseData<Void> pauseCreateBatch(@Validated @RequestBody PauseCreateParams params) {
         ociService.pauseCreateBatch(params);
-        return ResponseData.successData("暂停开机任务成功");
+        return ResponseData.successData("Tarea de creación pausada");
     }
 
     @PostMapping(path = "/resumeCreateBatch")
     public ResponseData<Void> resumeCreateBatch(@Validated @RequestBody PauseCreateParams params) {
         ociService.resumeCreateBatch(params);
-        return ResponseData.successData("恢复开机任务成功");
+        return ResponseData.successData("Tarea de creación reanudada");
     }
 
     @PostMapping(path = "/createInstanceBatch")
@@ -154,67 +154,67 @@ public class OciController {
         // Submit asynchronously so the client gets an immediate response
         // regardless of how many tasks are being scheduled.
         virtualExecutor.execute(() -> ociService.createInstanceBatch(params));
-        return ResponseData.successData("批量开机任务已提交，正在逐步创建中…");
+        return ResponseData.successData("Tareas enviadas; la creación se realizará de forma escalonada…");
     }
 
     @PostMapping(path = "/updateInstanceState")
     public ResponseData<Void> updateInstanceState(@Validated @RequestBody UpdateInstanceStateParams params) {
         ociService.updateInstanceState(params);
-        return ResponseData.successData("更新实例状态成功");
+        return ResponseData.successData("Estado de instancia actualizado");
     }
 
     @PostMapping(path = "/sendCaptcha")
     public ResponseData<Void> sendCaptcha(@Validated @RequestBody SendCaptchaParams params) {
         ociService.sendCaptcha(params);
-        return ResponseData.successData("验证码已发送，请查看TG或钉钉消息");
+        return ResponseData.successData("Código enviado; consulta Telegram o DingTalk");
     }
 
     @PostMapping(path = "/terminateInstance")
     public ResponseData<Void> terminateInstance(@Validated @RequestBody TerminateInstanceParams params) {
         ociService.terminateInstance(params);
-        return ResponseData.successData("终止实例命令已下发");
+        return ResponseData.successData("Solicitud de terminación de instancia enviada");
     }
 
     @PostMapping(path = "/releaseSecurityRule")
     public ResponseData<Void> releaseSecurityRule(@Validated @RequestBody ReleaseSecurityRuleParams params) {
         ociService.releaseSecurityRule(params);
-        return ResponseData.successData("安全列表放行成功");
+        return ResponseData.successData("Lista de seguridad abierta");
     }
 
     @PostMapping(path = "/getInstanceCfgInfo")
     public ResponseData<InstanceCfgDTO> getInstanceCfgInfo(@Validated @RequestBody GetInstanceCfgInfoParams params) {
-        return ResponseData.successData(ociService.getInstanceCfgInfo(params), "获取实例配置信息成功");
+        return ResponseData.successData(ociService.getInstanceCfgInfo(params), "Configuración de instancia obtenida");
     }
 
     @PostMapping(path = "/createIpv6")
     public ResponseData<Void> createIpv6(@Validated @RequestBody CreateIpv6Params params) {
         ociService.createIpv6(params);
-        return ResponseData.successData("为实例附加 IPV6 成功");
+        return ResponseData.successData("IPv6 añadido a la instancia");
     }
 
     @PostMapping(path = "/updateInstanceName")
     public ResponseData<Void> updateInstanceName(@Validated @RequestBody UpdateInstanceNameParams params) {
         ociService.updateInstanceName(params);
-        return ResponseData.successData("修改实例名称成功");
+        return ResponseData.successData("Nombre de instancia actualizado");
     }
 
     @PostMapping(path = "/updateInstanceRootPassword")
     public ResponseData<Void> updateInstanceRootPassword(@Validated @RequestBody UpdateInstanceRootPasswordParams params) {
         ociService.updateInstanceRootPassword(params);
-        String action = (params.getPassword() == null || params.getPassword().isBlank()) ? "删除" : "更新";
-        return ResponseData.successData(action + " root 密码标签成功");
+        String action = (params.getPassword() == null || params.getPassword().isBlank()) ? "Eliminar" : "Actualizar";
+        return ResponseData.successData(action + " etiqueta de contraseña de root: operación completada");
     }
 
     @PostMapping(path = "/updateInstanceCfg")
     public ResponseData<Void> updateInstanceCfg(@Validated @RequestBody UpdateInstanceCfgParams params) {
         ociService.updateInstanceCfg(params);
-        return ResponseData.successData("修改实例配置成功");
+        return ResponseData.successData("Configuración de instancia actualizada");
     }
 
     @PostMapping(path = "/updateBootVolumeCfg")
     public ResponseData<Void> updateBootVolumeCfg(@Validated @RequestBody UpdateBootVolumeCfgParams params) {
         ociService.updateBootVolumeCfg(params);
-        return ResponseData.successData("修改引导卷配置成功");
+        return ResponseData.successData("Configuración del volumen de arranque actualizada");
     }
 
     @PostMapping(path = "/checkAlive")
@@ -225,19 +225,19 @@ public class OciController {
     @PostMapping(path = "/checkAliveBatch")
     public ResponseData<Void> checkAliveBatch(@Validated @RequestBody IdListParams params) {
         ociService.checkAliveBatch(params);
-        return ResponseData.successData("测活已提交，正在异步检测中，稍后刷新可查看结果…");
+        return ResponseData.successData("Comprobación iniciada en segundo plano; actualiza la lista más tarde…");
     }
 
     @PostMapping(path = "/refreshPlanTypeBatch")
     public ResponseData<Void> refreshPlanTypeBatch(@Validated @RequestBody IdListParams params) {
         ociService.refreshPlanTypeBatch(params);
-        return ResponseData.successData("套餐类型刷新成功");
+        return ResponseData.successData("Tipo de plan actualizado");
     }
 
     @PostMapping(path = "/refreshCfgBatch")
     public ResponseData<Void> refreshCfgBatch(@Validated @RequestBody IdListParams params) {
         ociService.refreshCfgBatch(params);
-        return ResponseData.successData("更新配置已提交，正在异步刷新套餐类型与账户状态…");
+        return ResponseData.successData("Actualización iniciada; el plan y el estado se consultarán en segundo plano…");
     }
 
     @PostMapping(path = "/startVnc")
@@ -254,18 +254,18 @@ public class OciController {
     @PostMapping(path = "/oneClick500M")
     public ResponseData<Void> oneClick500M(@Validated @RequestBody CreateNetworkLoadBalancerParams params) {
         instanceService.oneClick500M(params);
-        return ResponseData.successData("一键开启下行500Mbps任务下发成功");
+        return ResponseData.successData("Tarea de activación de 500 Mbps enviada");
     }
 
     @PostMapping(path = "/oneClickClose500M")
     public ResponseData<Void> oneClickClose500M(@Validated @RequestBody Close500MParams params) {
         instanceService.oneClickClose500M(params);
-        return ResponseData.successData("关闭下行500Mbps任务下发成功");
+        return ResponseData.successData("Tarea de desactivación de 500 Mbps enviada");
     }
 
     @PostMapping(path = "/updateInstanceShape")
     public ResponseData<Void> updateInstanceShape(@Validated @RequestBody UpdateShapeParams params) {
         instanceService.updateInstanceShape(params);
-        return ResponseData.successData("修改实例 Shape 成功");
+        return ResponseData.successData("Tipo de instancia actualizado");
     }
 }

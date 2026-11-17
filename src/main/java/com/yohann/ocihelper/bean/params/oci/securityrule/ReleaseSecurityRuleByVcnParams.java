@@ -13,9 +13,9 @@ import lombok.Data;
 @Data
 public class ReleaseSecurityRuleByVcnParams {
 
-    @NotBlank(message = "配置id不能为空")
+    @NotBlank(message = "El ID de configuración es obligatorio")
     private String ociCfgId;
 
-    @NotBlank(message = "VCN id不能为空")
+    @NotBlank(message = "El ID de VCN es obligatorio")
     private String vcnId;
 }

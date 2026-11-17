@@ -1,0 +1,35 @@
+name: oci-helper-es
+services:
+  panel:
+    build:
+      context: ..
+      dockerfile: Dockerfile.es
+    image: oci-helper-es:3.5.1-es3
+    restart: unless-stopped
+    ports:
+      - "127.0.0.1:8818:8818"
+    environment:
+      OCI_HELPER_ACCOUNT: ${OCI_HELPER_ACCOUNT:?Falta el usuario}
+      OCI_HELPER_PASSWORD: ${OCI_HELPER_PASSWORD:?Falta la contraseña}
+      OCI_HELPER_JWT_SECRET: ${OCI_HELPER_JWT_SECRET:?Falta la clave JWT}
+      JAVA_TOOL_OPTIONS: "-XX:MaxRAMPercentage=65.0 -XX:ActiveProcessorCount=2"
+    volumes:
+      - panel-data:/app/oci-helper
+      - console-keys:/home/ocihelper/.ssh
+    security_opt:
+      - no-new-privileges:true
+    cap_drop:
+      - ALL
+    read_only: true
+    tmpfs:
+      - /tmp:rw,exec,nosuid,nodev,mode=1777,size=256m
+    mem_limit: 1536m
+    pids_limit: 256
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "3"
+volumes:
+  panel-data:
+  console-keys:

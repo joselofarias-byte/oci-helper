@@ -26,6 +26,9 @@ public class AuthInterceptor implements HandlerInterceptor {
 
     @Value("${web.password}")
     private String password;
+
+    @Value("${web.jwt-secret}")
+    private String jwtSecret;
     
     @Autowired
     private IpSecurityService ipSecurityService;
@@ -40,20 +43,31 @@ public class AuthInterceptor implements HandlerInterceptor {
 
                         @Override
     public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler) throws Exception {
-        // Check IP security first (blacklist and defense mode)
+        // Keep the public login document and assets available so errors can be shown.
+        String uri = request.getRequestURI();
+        if (!(uri.startsWith("/api/") || uri.startsWith("/metrics/") || uri.equals("/logs"))) {
+            return true;
+        }
         String clientIp = getClientIp(request);
         
         if (!ipSecurityService.isIpAllowed(clientIp)) {
             log.warn("IP blocked: {}, URI: {}", clientIp, request.getRequestURI());
-            response.setStatus(HttpServletResponse.SC_FORBIDDEN);
+            boolean temporary = ipSecurityService.isAutomaticallyBlocked(clientIp)
+                    && !ipSecurityService.isDefenseModeEnabled();
+            long retryAfter = ipSecurityService.getRetryAfterSeconds(clientIp);
+            response.setStatus(temporary ? 429 : HttpServletResponse.SC_FORBIDDEN);
             response.setContentType("application/json;charset=UTF-8");
-            response.getWriter().write("{\"code\":-1,\"msg\":\"账号或密码不正确\"}");
+            if (temporary) response.setHeader("Retry-After", Long.toString(retryAfter));
+            String message = temporary
+                    ? "Demasiados intentos. Espera " + retryAfter + " segundos y vuelve a acceder."
+                    : "Acceso bloqueado por la configuración de seguridad del panel.";
+            response.getWriter().write("{\"success\":false,\"code\":" + (temporary ? 429 : 403)
+                    + ",\"msg\":\"" + message + "\"}");
             return false;
         }
         
         // 仅放行 WebSocket 端点的握手请求（/metrics/ 和 /logs），WebSocket handler 内部自行校验 token
         if ("GET".equalsIgnoreCase(request.getMethod()) && "websocket".equalsIgnoreCase(request.getHeader("Upgrade"))) {
-            String uri = request.getRequestURI();
             if (uri != null && (uri.startsWith("/metrics/") || uri.equals("/logs"))) {
                 return true;
             }
@@ -75,11 +89,11 @@ public class AuthInterceptor implements HandlerInterceptor {
                     return true; // 继续处理请求
                 } else {
                     response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
-                    throw new OciException(401, "无权限");
+                    throw new OciException(401, "Sin autorización");
                 }
             } else {
                 response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
-                throw new OciException(401, "无权限");
+                throw new OciException(401, "Sin autorización");
             }
         }
 
@@ -97,7 +111,7 @@ public class AuthInterceptor implements HandlerInterceptor {
     }
 
         private boolean validateToken(String token) {
-        return !CommonUtils.isTokenExpired(token) && JwtUtils.verifyToken(token, password);
+        return !CommonUtils.isTokenExpired(token) && JwtUtils.verifyToken(token, jwtSecret);
     }
     
     /**
@@ -107,31 +121,6 @@ public class AuthInterceptor implements HandlerInterceptor {
      * @return client IP address
      */
     private String getClientIp(HttpServletRequest request) {
-        String ip = request.getHeader("X-Forwarded-For");
-        if (ip != null && !ip.isEmpty() && !"unknown".equalsIgnoreCase(ip)) {
-            // X-Forwarded-For may contain multiple IPs, take the first one
-            int index = ip.indexOf(',');
-            if (index != -1) {
-                ip = ip.substring(0, index);
-            }
-            return ip.trim();
-        }
-        
-        ip = request.getHeader("X-Real-IP");
-        if (ip != null && !ip.isEmpty() && !"unknown".equalsIgnoreCase(ip)) {
-            return ip.trim();
-        }
-        
-        ip = request.getHeader("Proxy-Client-IP");
-        if (ip != null && !ip.isEmpty() && !"unknown".equalsIgnoreCase(ip)) {
-            return ip.trim();
-        }
-        
-        ip = request.getHeader("WL-Proxy-Client-IP");
-        if (ip != null && !ip.isEmpty() && !"unknown".equalsIgnoreCase(ip)) {
-            return ip.trim();
-        }
-        
-        return request.getRemoteAddr();
+        return CommonUtils.getClientIP(request);
     }
 }

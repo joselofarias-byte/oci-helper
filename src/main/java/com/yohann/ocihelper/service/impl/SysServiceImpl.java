@@ -95,6 +95,9 @@ public class SysServiceImpl implements ISysService {
     @Value("${web.password}")
     private String password;
 
+    @Value("${web.jwt-secret}")
+    private String jwtSecret;
+
     @Resource
     private MessageServiceFactory messageServiceFactory;
     @Resource
@@ -138,7 +141,7 @@ public class SysServiceImpl implements ISysService {
         boolean alreadyBlacklisted = ipSecurityService.isIpBlacklisted(clientIp);
         if (alreadyBlacklisted) {
             log.warn("请求IP：{} 登录失败（IP已在黑名单中）", clientIp);
-            throw new OciException(-1, "账号或密码不正确");
+            throw new OciException(-1, "Usuario o contraseña incorrectos");
         }
 
         // Check account first - don't send notification for wrong account
@@ -147,9 +150,9 @@ public class SysServiceImpl implements ISysService {
             // Record login failure but don't send message for wrong account
             boolean autoBlacklisted = ipSecurityService.recordLoginFailure(clientIp);
             if (autoBlacklisted) {
-                sendMessage(String.format("⚠️ IP: %s 因登录失败次数过多已被自动拉黑！", clientIp));
+                sendMessage(String.format("⚠️ IP: %s bloqueada durante 60 segundos por demasiados intentos fallidos.", clientIp));
             }
-            throw new OciException(-1, "账号或密码不正确");
+            throw new OciException(-1, "Usuario o contraseña incorrectos");
         }
 
         // Account is correct, check MFA and password - send detailed notifications
@@ -159,7 +162,7 @@ public class SysServiceImpl implements ISysService {
                 boolean autoBlacklisted = ipSecurityService.recordLoginFailure(clientIp);
                 if (autoBlacklisted) {
                     // IP just got blacklisted, only send blacklist notification
-                    sendMessage(String.format("⚠️ IP: %s 因登录失败次数过多已被自动拉黑！", clientIp));
+                    sendMessage(String.format("⚠️ IP: %s bloqueada durante 60 segundos por demasiados intentos fallidos.", clientIp));
                 } else {
                     // Not blacklisted yet, send detailed warning
                     sendMessage(String.format(
@@ -176,7 +179,7 @@ public class SysServiceImpl implements ISysService {
                             LocalDateTime.now().format(CommonUtils.DATETIME_FMT_NORM)
                     ));
                 }
-                throw new OciException(-1, "验证码不能为空");
+                throw new OciException(-1, "El código de verificación es obligatorio");
             }
             OciKv mfa = kvService.getOne(new LambdaQueryWrapper<OciKv>()
                     .eq(OciKv::getCode, SysCfgEnum.SYS_MFA_SECRET.getCode()));
@@ -185,7 +188,7 @@ public class SysServiceImpl implements ISysService {
                 boolean autoBlacklisted = ipSecurityService.recordLoginFailure(clientIp);
                 if (autoBlacklisted) {
                     // IP just got blacklisted, only send blacklist notification
-                    sendMessage(String.format("⚠️ IP: %s 因登录失败次数过多已被自动拉黑！", clientIp));
+                    sendMessage(String.format("⚠️ IP: %s bloqueada durante 60 segundos por demasiados intentos fallidos.", clientIp));
                 } else {
                     // Not blacklisted yet, send detailed warning
                     sendMessage(String.format(
@@ -200,11 +203,11 @@ public class SysServiceImpl implements ISysService {
                             clientIp,
                             params.getAccount(),
                             maskPassword(params.getPassword()),
-                            params.getMfaCode(),
+                            "[omitido]",
                             LocalDateTime.now().format(CommonUtils.DATETIME_FMT_NORM)
                     ));
                 }
-                throw new OciException(-1, "无效的验证码");
+                throw new OciException(-1, "Código de verificación no válido");
             }
         }
 
@@ -214,7 +217,7 @@ public class SysServiceImpl implements ISysService {
             boolean autoBlacklisted = ipSecurityService.recordLoginFailure(clientIp);
             if (autoBlacklisted) {
                 // IP just got blacklisted, only send blacklist notification
-                sendMessage(String.format("⚠️ IP: %s 因登录失败次数过多已被自动拉黑！", clientIp));
+                sendMessage(String.format("⚠️ IP: %s bloqueada durante 60 segundos por demasiados intentos fallidos.", clientIp));
             } else {
                 // Not blacklisted yet, send detailed warning
                 sendMessage(String.format(
@@ -231,7 +234,7 @@ public class SysServiceImpl implements ISysService {
                         LocalDateTime.now().format(CommonUtils.DATETIME_FMT_NORM)
                 ));
             }
-            throw new OciException(-1, "账号或密码不正确");
+            throw new OciException(-1, "Usuario o contraseña incorrectos");
         }
 
         // Clear login failures on successful login
@@ -239,7 +242,7 @@ public class SysServiceImpl implements ISysService {
 
         Map<String, Object> payload = new HashMap<>(1);
         payload.put("account", CommonUtils.getMD5(account));
-        String token = CommonUtils.genToken(payload, password);
+        String token = CommonUtils.genToken(payload, jwtSecret);
 
         String latestVersion = CommonUtils.getLatestVersion();
         String currentVersion = kvService.getObj(new LambdaQueryWrapper<OciKv>()
@@ -408,7 +411,7 @@ public class SysServiceImpl implements ISysService {
     @Override
     public void backup(BackupParams params) {
         if (params.isEnableEnc() && StrUtil.isBlank(params.getPassword())) {
-            throw new OciException(-1, "密码不能为空");
+            throw new OciException(-1, "La contraseña es obligatoria");
         }
         File tempDir = null;
         File dataFile = null;
@@ -442,11 +445,11 @@ public class SysServiceImpl implements ISysService {
                         zipFile.getFile().getName());
             } catch (Exception e) {
                 log.error("备份文件失败：{}", e.getLocalizedMessage());
-                throw new OciException(-1, "备份文件失败");
+                throw new OciException(-1, "No se pudo crear la copia de seguridad");
             }
         } catch (Exception e) {
             log.error("备份文件失败：{}", e.getLocalizedMessage());
-            throw new OciException(-1, "备份文件失败");
+            throw new OciException(-1, "No se pudo crear la copia de seguridad");
         } finally {
             FileUtil.del(tempDir);
             FileUtil.del(dataFile);
@@ -457,7 +460,7 @@ public class SysServiceImpl implements ISysService {
     @Override
     public String createBackupFile(BackupParams params) {
         if (params.isEnableEnc() && StrUtil.isBlank(params.getPassword())) {
-            throw new OciException(-1, "密码不能为空");
+            throw new OciException(-1, "La contraseña es obligatoria");
         }
         File tempDir = null;
         File dataFile = null;
@@ -499,7 +502,7 @@ public class SysServiceImpl implements ISysService {
             FileUtil.del(tempDir);
             FileUtil.del(dataFile);
             FileUtil.del(outEncZip);
-            throw new OciException(-1, "备份文件失败");
+            throw new OciException(-1, "No se pudo crear la copia de seguridad");
         }
     }
 
@@ -519,7 +522,7 @@ public class SysServiceImpl implements ISysService {
 
             unzipDir = new File(basicDirPath + file.getOriginalFilename().replaceAll(".zip", ""));
             if (!unzipDir.exists()) {
-                throw new OciException(-1, "解压失败");
+                throw new OciException(-1, "No se pudo extraer el archivo");
             }
 
             for (File unzipFile : unzipDir.listFiles()) {
@@ -572,7 +575,7 @@ public class SysServiceImpl implements ISysService {
         } catch (Exception e) {
             e.printStackTrace();
             log.error("恢复数据失败：{}", e.getLocalizedMessage());
-            throw new OciException(-1, "恢复数据失败");
+            throw new OciException(-1, "No se pudieron restaurar los datos");
         } finally {
             FileUtil.del(tempZip);
             FileUtil.del(unzipDir);
@@ -590,7 +593,7 @@ public class SysServiceImpl implements ISysService {
         File unzipDir = null;
 
         if (!tempZip.exists()) {
-            throw new OciException(-1, "备份文件不存在");
+            throw new OciException(-1, "La copia de seguridad no existe");
         }
 
         try {
@@ -613,7 +616,7 @@ public class SysServiceImpl implements ISysService {
             }
 
             if (!unzipDir.exists() || unzipDir.listFiles() == null || unzipDir.listFiles().length == 0) {
-                throw new OciException(-1, "解压失败或备份文件为空");
+                throw new OciException(-1, "No se pudo extraer la copia o está vacía");
             }
 
             log.info("备份文件解压成功: {}", unzipDir.getAbsolutePath());
@@ -673,7 +676,7 @@ public class SysServiceImpl implements ISysService {
         } catch (Exception e) {
             e.printStackTrace();
             log.error("恢复数据失败：{}", e.getLocalizedMessage());
-            throw new OciException(-1, "恢复数据失败");
+            throw new OciException(-1, "No se pudieron restaurar los datos");
         } finally {
             // 清理解压目录
             if (unzipDir != null) {
@@ -813,35 +816,13 @@ public class SysServiceImpl implements ISysService {
         OciKv mfa = kvService.getOne(new LambdaQueryWrapper<OciKv>()
                 .eq(OciKv::getCode, SysCfgEnum.SYS_MFA_SECRET.getCode()));
         if (!CommonUtils.verifyMfaCode(mfa.getValue(), Integer.parseInt(mfaCode))) {
-            throw new OciException(-1, "无效的验证码");
+            throw new OciException(-1, "Código de verificación no válido");
         }
     }
 
     @Override
     public void updateVersion() {
-        String latestVersion = CommonUtils.getLatestVersion();
-        String currentVersion = kvService.getObj(new LambdaQueryWrapper<OciKv>()
-                .eq(OciKv::getCode, SysCfgEnum.SYS_INFO_VERSION.getCode())
-                .eq(OciKv::getType, SysCfgTypeEnum.SYS_INFO.getCode())
-                .select(OciKv::getValue), String::valueOf);
-        if (latestVersion.equals(currentVersion)) {
-            throw new OciException(-1, "当前已是最新版本，请返回主页并刷新页面查看");
-        }
-        List<String> command = List.of("/bin/sh", "-c", "echo trigger > /app/oci-helper/update_version_trigger.flag");
-        Process process = RuntimeUtil.exec(command.toArray(new String[0]));
-
-        int exitCode = 0;
-        try {
-            exitCode = process.waitFor();
-        } catch (InterruptedException e) {
-            log.error("TG Bot error", e);
-        }
-
-        if (exitCode == 0) {
-            log.info("Start the version update task...");
-        } else {
-            log.error("version update task exec error,exitCode:{}", exitCode);
-        }
+        throw new OciException(-1, "Actualiza esta versión en español con su instalador; la actualización original está desactivada.");
     }
 
     @Override
@@ -852,7 +833,7 @@ public class SysServiceImpl implements ISysService {
         boolean alreadyBlacklisted = ipSecurityService.isIpBlacklisted(clientIp);
         if (alreadyBlacklisted) {
             log.warn("请求IP：{} Google登录失败（IP已在黑名单中）", clientIp);
-            throw new OciException(-1, "Google登录失败");
+            throw new OciException(-1, "Error al acceder con Google");
         }
 
         log.info("收到Google登录请求，IP: {}, credential长度: {}", clientIp,
@@ -862,18 +843,18 @@ public class SysServiceImpl implements ISysService {
             String googleLoginJson = getCfgValue(SysCfgEnum.GOOGLE_ONE_CLICK_LOGIN);
             if (StrUtil.isBlank(googleLoginJson)) {
                 log.error("请求IP：{} Google登录失败，Google登录功能未配置", clientIp);
-                throw new OciException(-1, "Google登录功能未配置");
+                throw new OciException(-1, "El acceso con Google no está configurado");
             }
 
             GoogleLoginConfigDTO googleConfig = JSONUtil.toBean(googleLoginJson, GoogleLoginConfigDTO.class);
             if (googleConfig.getEnabled() == null || !googleConfig.getEnabled()) {
                 log.error("请求IP：{} Google登录失败，Google登录功能未启用", clientIp);
-                throw new OciException(-1, "Google登录功能未启用");
+                throw new OciException(-1, "El acceso con Google está desactivado");
             }
 
             if (StrUtil.isBlank(googleConfig.getClientId())) {
                 log.error("请求IP：{} Google登录失败，Google Client ID未配置", clientIp);
-                throw new OciException(-1, "Google Client ID未配置");
+                throw new OciException(-1, "El ID de cliente de Google no está configurado");
             }
 
             // Verify the Google ID token
@@ -906,19 +887,19 @@ public class SysServiceImpl implements ISysService {
                     log.error("3. Token 签名无效");
                     // 关键修复：必须抛出异常！
                     sendMessage(String.format("请求IP：%s Google登录失败，Token验证失败", clientIp));
-                    throw new OciException(-1, "无效的Google凭证：Token验证失败");
+                    throw new OciException(-1, "Credencial de Google no válida: verificación fallida");
                 }
             } catch (Exception e) {
                 log.error("请求IP：{} Google登录失败，验证token异常：{}", clientIp, e.getMessage(), e);
                 log.error("异常堆栈信息：", e);
                 sendMessage(String.format("请求IP：%s Google登录失败，无效的凭证，异常: %s", clientIp, e.getMessage()));
-                throw new OciException(-1, "无效的Google凭证: " + e.getMessage());
+                throw new OciException(-1, "Credencial de Google no válida: " + e.getMessage());
             }
 
             if (idToken == null) {
                 log.error("请求IP：{} Google登录失败，无效的凭证（token为null）", clientIp);
                 sendMessage(String.format("请求IP：%s Google登录失败，无效的凭证，如果不是本人操作，可能存在被攻击的风险", clientIp));
-                throw new OciException(-1, "无效的Google凭证");
+                throw new OciException(-1, "Credencial de Google no válida");
             }
 
             GoogleIdToken.Payload payload = idToken.getPayload();
@@ -936,14 +917,14 @@ public class SysServiceImpl implements ISysService {
             if (expirationTime != null && expirationTime < currentTime) {
                 log.error("请求IP：{} Google登录失败，token已过期，过期时间：{}，当前时间：{}",
                         clientIp, expirationTime, currentTime);
-                throw new OciException(-1, "Google凭证已过期");
+                throw new OciException(-1, "La credencial de Google ha vencido");
             }
 
             // Check if token is issued in the future (clock skew attack)
             if (issuedAt != null && issuedAt > currentTime + 300) { // 5 minutes tolerance
                 log.error("请求IP：{} Google登录失败，token的签发时间在未来，签发时间：{}，当前时间：{}",
                         clientIp, issuedAt, currentTime);
-                throw new OciException(-1, "无效的Google凭证");
+                throw new OciException(-1, "Credencial de Google no válida");
             }
 
             // Check token age (should be fresh, not older than 5 minutes)
@@ -960,7 +941,7 @@ public class SysServiceImpl implements ISysService {
             if (usedToken != null) {
                 log.error("请求IP：{} Google登录失败，该token已被使用过，可能是重放攻击！Email: {}", clientIp, email);
                 sendMessage(String.format("请求IP：%s 尝试重复使用Google登录token，可能是攻击行为！Email: %s", clientIp, email));
-                throw new OciException(-1, "该Google凭证已被使用，请重新登录");
+                throw new OciException(-1, "Esta credencial de Google ya se utilizó. Inicia sesión de nuevo");
             }
             // Mark token as used (cache for exp time or 1 hour, whichever is longer)
             long cacheDuration = expirationTime != null ? (expirationTime - currentTime + 3600) : 3600;
@@ -971,14 +952,14 @@ public class SysServiceImpl implements ISysService {
             if (!"https://accounts.google.com".equals(issuer) && !"accounts.google.com".equals(issuer)) {
                 log.error("请求IP：{} Google登录失败，无效的issuer：{}", clientIp, issuer);
                 sendMessage(String.format("请求IP：%s Google登录失败，无效的issuer: %s", clientIp, issuer));
-                throw new OciException(-1, "无效的Google凭证");
+                throw new OciException(-1, "Credencial de Google no válida");
             }
 
             String audience = (String) payload.getAudience();
             if (!googleConfig.getClientId().equals(audience)) {
                 log.error("请求IP：{} Google登录失败，无效的audience：{}，期望：{}", clientIp, audience, googleConfig.getClientId());
                 sendMessage(String.format("请求IP：%s Google登录失败，无效的audience", clientIp));
-                throw new OciException(-1, "无效的Google凭证");
+                throw new OciException(-1, "Credencial de Google no válida");
             }
 
             boolean emailVerified = payload.getEmailVerified();
@@ -989,14 +970,14 @@ public class SysServiceImpl implements ISysService {
 
             if (!emailVerified) {
                 log.error("请求IP：{} Google登录失败，邮箱未验证", clientIp);
-                throw new OciException(-1, "Google邮箱未验证");
+                throw new OciException(-1, "El correo de Google no está verificado");
             }
 
             // Validate email whitelist - must be configured
             if (StrUtil.isBlank(googleConfig.getAllowedEmails())) {
                 log.error("请求IP：{} Google登录失败，未配置允许的邮箱白名单", clientIp);
                 sendMessage(String.format("请求IP：%s 尝试使用邮箱 %s Google登录，但未配置白名单", clientIp, email));
-                throw new OciException(-1, "系统管理员未配置允许登录的Google账号白名单");
+                throw new OciException(-1, "No hay una lista de correos de Google autorizados");
             }
 
             // Check if email is in whitelist (exact match)
@@ -1015,14 +996,14 @@ public class SysServiceImpl implements ISysService {
                 log.error("请求IP：{} Google登录失败，邮箱 {} 不在允许的白名单中", clientIp, email);
                 log.error("当前配置的白名单：{}", googleConfig.getAllowedEmails());
                 sendMessage(String.format("请求IP：%s 尝试使用未授权的Google账号 %s 登录，如果不是本人操作，可能存在被放击的风险！", clientIp, email));
-                throw new OciException(-1, "该Google账号不在允许登录的账号白名单中");
+                throw new OciException(-1, "La cuenta de Google no está autorizada");
             }
 
             // Generate JWT token
             Map<String, Object> tokenPayload = new HashMap<>(2);
             tokenPayload.put("account", CommonUtils.getMD5(email));
             tokenPayload.put("googleUser", true);
-            String token = CommonUtils.genToken(tokenPayload, password);
+            String token = CommonUtils.genToken(tokenPayload, jwtSecret);
 
             // Get version info
             String latestVersion = CommonUtils.getLatestVersion();
@@ -1067,7 +1048,7 @@ public class SysServiceImpl implements ISysService {
             if (e instanceof OciException) {
                 throw (OciException) e;
             }
-            throw new OciException(-1, "Google登录失败：" + e.getMessage());
+            throw new OciException(-1, "Error al acceder con Google: " + e.getMessage());
         }
     }
 
@@ -1101,16 +1082,7 @@ public class SysServiceImpl implements ISysService {
      * Shows first 3 and last 3 characters, masks the middle
      */
     private String maskPassword(String pwd) {
-        if (pwd == null || pwd.isEmpty()) {
-            return "(empty)";
-        }
-        if (pwd.length() <= 3) {
-            return "***";
-        }
-        if (pwd.length() <= 6) {
-            return pwd.charAt(0) + "***" + pwd.charAt(pwd.length() - 1);
-        }
-        return pwd.substring(0, 3) + "***" + pwd.substring(pwd.length() - 3);
+        return "[omitida]";
     }
 
     private void cleanAndRestartTask() {

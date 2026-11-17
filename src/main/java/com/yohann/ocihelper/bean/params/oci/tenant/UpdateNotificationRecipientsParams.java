@@ -15,9 +15,9 @@ import java.util.List;
 @Data
 public class UpdateNotificationRecipientsParams {
 
-    @NotBlank(message = "cfgId不能为空")
+    @NotBlank(message = "El ID de configuración es obligatorio")
     private String cfgId;
 
-    @NotEmpty(message = "收件人邮箱列表不能为空")
+    @NotEmpty(message = "La lista de correos de destinatarios es obligatoria")
     private List<String> recipients;
 }

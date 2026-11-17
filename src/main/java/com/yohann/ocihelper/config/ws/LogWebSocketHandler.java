@@ -60,6 +60,11 @@ public class LogWebSocketHandler extends TextWebSocketHandler {
     public void afterConnectionEstablished(WebSocketSession session) {
         String token = getTokenFromSession(session);
         if (token == null || !validateToken(token)) {
+            try {
+                session.close(CloseStatus.POLICY_VIOLATION);
+            } catch (IOException e) {
+                log.debug("No se pudo cerrar la conexión no autorizada");
+            }
             return;
         }
 
@@ -161,8 +166,11 @@ public class LogWebSocketHandler extends TextWebSocketHandler {
 
     @Override
     public void afterConnectionClosed(WebSocketSession session, CloseStatus status) {
+        if (session != currentSession) {
+            return;
+        }
         try {
-            tailer.stop();
+            if (tailer != null) tailer.stop();
             if (logPushTask != null) {
                 logPushTask.cancel(false);
             }

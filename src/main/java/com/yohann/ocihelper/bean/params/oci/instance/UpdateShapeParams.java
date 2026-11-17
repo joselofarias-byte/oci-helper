@@ -12,10 +12,10 @@ import lombok.Data;
 @Data
 public class UpdateShapeParams {
 
-    @NotBlank(message = "ociCfgId不能为空")
+    @NotBlank(message = "El ID de configuración OCI es obligatorio")
     private String ociCfgId;
-    @NotBlank(message = "instanceId不能为空")
+    @NotBlank(message = "El ID de instancia es obligatorio")
     private String instanceId;
-    @NotBlank(message = "shape不能为空，例：VM.Standard.A1.Flex")
+    @NotBlank(message = "El tipo de instancia es obligatorio, por ejemplo: VM.Standard.A1.Flex")
     private String shape;
 }

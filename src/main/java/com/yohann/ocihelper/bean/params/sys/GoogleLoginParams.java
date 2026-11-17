@@ -14,6 +14,6 @@ import jakarta.validation.constraints.NotBlank;
 @Data
 public class GoogleLoginParams {
 
-    @NotBlank(message = "Google credential不能为空")
+    @NotBlank(message = "La credencial de Google es obligatoria")
     private String credential;
 }

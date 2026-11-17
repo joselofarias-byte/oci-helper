@@ -60,7 +60,7 @@ public class MetricsWebSocketHandler {
     @OnOpen
     public void onOpen(Session session, @PathParam(value = "token") String token) {
         if (token == null || !validateToken(token)) {
-            throw new OciException(-1, "无效的token");
+            throw new OciException(-1, "Token no válido");
         }
 
         // 如果已存在旧的 session，先关闭它

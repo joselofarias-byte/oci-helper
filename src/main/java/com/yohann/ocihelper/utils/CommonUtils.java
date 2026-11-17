@@ -60,7 +60,7 @@ public class CommonUtils {
     public static final String CREATE_COUNTS_PREFIX = "CREATE_COUNTS_PREFIX_";
     public static final String CHANGE_IP_ERROR_COUNTS_PREFIX = "CHANGE_IP_ERROR_COUNTS_PREFIX_";
     public static final String TERMINATE_INSTANCE_PREFIX = "TERMINATE_INSTANCE_PREFIX_";
-    public static final String LOG_FILE_PATH = "/var/log/oci-helper.log";
+    public static final String LOG_FILE_PATH = System.getenv().getOrDefault("OCI_HELPER_LOG_FILE", "/app/oci-helper/logs/oci-helper.log");
     public static final String MFA_QR_PNG_PATH = System.getProperty("user.dir") + File.separator + "mfa.png";
     private static final String CIDR_REGEX =
             "^([0-9]{1,3}\\.){3}[0-9]{1,3}/([0-9]|[1-2][0-9]|3[0-2])$";
@@ -176,7 +176,7 @@ public class CommonUtils {
             return zipFile;
         } catch (Exception e) {
             log.error("压缩文件失败：{}", e.getLocalizedMessage());
-            throw new OciException(-1, "压缩文件失败");
+            throw new OciException(-1, "No se pudo comprimir el archivo");
         }
     }
 
@@ -201,7 +201,7 @@ public class CommonUtils {
 //            readFilesRecursively(outputDir);
         } catch (ZipException e) {
             log.error("解密备份 ZIP 文件失败：{}", e.getMessage());
-            throw new OciException(-1, "解密 ZIP 文件失败");
+            throw new OciException(-1, "No se pudo descifrar el ZIP");
         }
     }
 
@@ -237,7 +237,7 @@ public class CommonUtils {
             encodedIssuer = URLEncoder.encode(issuer, StandardCharsets.UTF_8.displayName());
             encodedAccount = URLEncoder.encode(account, StandardCharsets.UTF_8.displayName());
         } catch (UnsupportedEncodingException e) {
-            throw new OciException(-1, "生成url失败");
+            throw new OciException(-1, "No se pudo generar la URL");
         }
 
         return String.format("otpauth://totp/%s:%s?secret=%s&issuer=%s",
@@ -589,72 +589,19 @@ public class CommonUtils {
         long seconds = duration.getSeconds() % 60;
 
         // 格式化结果
-        return days + "天" + hours + "小时" + minutes + "分钟" + seconds + "秒";
+        return days + " d " + hours + " h " + minutes + " min " + seconds + " s";
     }
 
     public static String getLatestVersion() {
-        return getGithubRepositoryInfo("tag_name");
+        return System.getenv().getOrDefault("OCI_HELPER_VERSION", "3.5.1-es3");
     }
 
     public static String getLatestVersionBody() {
-        return getGithubRepositoryInfo("body");
-    }
-
-    private static String getGithubRepositoryInfo(String item) {
-        String repository = "Yohann0617/oci-helper";
-        String apiUrl = "https://api.github.com/repos/" + repository + "/releases/latest";
-        String rst = null;
-        try {
-            // Create a connection to the GitHub API
-            URL url = new URL(apiUrl);
-            HttpURLConnection connection = (HttpURLConnection) url.openConnection();
-            connection.setRequestMethod("GET");
-            connection.setRequestProperty("Accept", "application/vnd.github.v3+json");
-
-            // Check the response code
-            int responseCode = connection.getResponseCode();
-            if (responseCode == HttpURLConnection.HTTP_OK) {
-                // Read the response
-                BufferedReader reader = new BufferedReader(new InputStreamReader(connection.getInputStream()));
-                StringBuilder response = new StringBuilder();
-                String line;
-
-                while ((line = reader.readLine()) != null) {
-                    response.append(line);
-                }
-
-                reader.close();
-
-                // Parse the response as JSON
-                JSONObject jsonResponse = new JSONObject(response.toString());
-                rst = jsonResponse.getStr(item);
-            } else {
-                log.error("Failed to fetch the latest release. HTTP response code: {}", responseCode);
-            }
-
-            connection.disconnect();
-        } catch (Exception e) {
-            log.error("Failed to fetch the latest release. exception: {}", e.getMessage());
-            throw new OciException(-1, "获取 oci-helper 项目信息失败");
-        }
-        return rst;
+        return "Versión en español. Actualizaciones manuales desde joselofarias-byte/oci-helper.";
     }
 
     public static String getClientIP(HttpServletRequest request) {
-        String ip = request.getHeader("X-Forwarded-For");
-        if (ip != null && !ip.isEmpty() && !"unknown".equalsIgnoreCase(ip)) {
-            return ip.split(",")[0].trim();
-        }
-        ip = request.getHeader("Proxy-Client-IP");
-        if (ip != null && !ip.isEmpty() && !"unknown".equalsIgnoreCase(ip)) {
-            return ip;
-        }
-        ip = request.getHeader("WL-Proxy-Client-IP");
-        if (ip != null && !ip.isEmpty() && !"unknown".equalsIgnoreCase(ip)) {
-            return ip;
-        }
-        ip = request.getRemoteAddr();
-        return ip;
+        return request.getRemoteAddr();
     }
 
     public static void writeResponse(HttpServletResponse response,

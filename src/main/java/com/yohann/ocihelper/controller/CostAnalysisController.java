@@ -28,6 +28,6 @@ public class CostAnalysisController {
      */
     @PostMapping("/analysis")
     public ResponseData<GetCostAnalysisRsp> analysis(@Validated @RequestBody GetCostAnalysisParams params) {
-        return ResponseData.successData(costAnalysisService.getCostAnalysis(params), "查询成本分析成功");
+        return ResponseData.successData(costAnalysisService.getCostAnalysis(params), "Análisis de costes obtenido");
     }
 }

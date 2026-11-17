@@ -13,9 +13,9 @@ import lombok.Getter;
 @Getter
 public enum ErrorEnum {
 
-    LIMIT_EXCEEDED(400, "limit", "无法创建实例,配额已经超过免费额度"),
-    NOT_AUTHENTICATED(401, "NotAuthenticated", "账号已无权或已被封禁"),
-    TOO_MANY_REQUESTS(429, "TooManyRequests", "请求频繁"),
+    LIMIT_EXCEEDED(400, "limit", "No se puede crear la instancia: se superó la cuota gratuita"),
+    NOT_AUTHENTICATED(401, "NotAuthenticated", "La cuenta no tiene permisos o está bloqueada"),
+    TOO_MANY_REQUESTS(429, "TooManyRequests", "Demasiadas solicitudes"),
     CAPACITY(500, "Out of capacity", "Out of capacity"),
     CAPACITY_HOST(500, "Out of host capacity", "Out of host capacity"),
 

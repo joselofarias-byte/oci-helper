@@ -213,7 +213,7 @@ public class TenantServiceImpl implements ITenantService {
             return rsp;
         } catch (Exception e) {
             log.error("获取租户信息失败", e);
-            throw new OciException(-1, "获取租户信息失败", e);
+            throw new OciException(-1, "No se pudo obtener la cuenta OCI", e);
         }
     }
 
@@ -230,7 +230,7 @@ public class TenantServiceImpl implements ITenantService {
             fetcher.deleteAllMfa();
         } catch (Exception e) {
             log.error("清除 MFA 设备失败", e);
-            throw new OciException(-1, "清除 MFA 设备失败", e);
+            throw new OciException(-1, "No se pudieron eliminar los dispositivos MFA", e);
         }
     }
 
@@ -247,7 +247,7 @@ public class TenantServiceImpl implements ITenantService {
             fetcher.deleteAllApiKey();
         } catch (Exception e) {
             log.error("清除所有 API 失败", e);
-            throw new OciException(-1, "清除所有 API 失败", e);
+            throw new OciException(-1, "No se pudieron eliminar las claves API", e);
         }
     }
 
@@ -263,7 +263,7 @@ public class TenantServiceImpl implements ITenantService {
             return fetcher.resetUserPassword(targetUserId);
         } catch (Exception e) {
             log.error("重置用户密码失败", e);
-            throw new OciException(-1, "重置用户密码失败: " + e.getMessage(), e);
+            throw new OciException(-1, "No se pudo restablecer la contraseña: " + e.getMessage(), e);
         }
     }
 
@@ -280,7 +280,7 @@ public class TenantServiceImpl implements ITenantService {
             fetcher.updateUser(params.getEmail(), params.getDbUserName(), params.getDescription());
         } catch (Exception e) {
             log.error("更新用户信息失败", e);
-            throw new OciException(-1, "更新用户信息失败", e);
+            throw new OciException(-1, "No se pudo actualizar el usuario", e);
         }
     }
 
@@ -299,7 +299,7 @@ public class TenantServiceImpl implements ITenantService {
                     .build());
         } catch (Exception e) {
             log.error("删除用户失败", e);
-            throw new OciException(-1, "删除用户失败", e);
+            throw new OciException(-1, "No se pudo eliminar el usuario", e);
         }
     }
 
@@ -314,7 +314,7 @@ public class TenantServiceImpl implements ITenantService {
             }
         } catch (Exception e) {
             log.error("更新密码策略失败", e);
-            throw new OciException(-1, "更新密码策略失败");
+            throw new OciException(-1, "No se pudo actualizar la política de contraseñas");
         }
     }
 
@@ -327,7 +327,7 @@ public class TenantServiceImpl implements ITenantService {
             throw new OciException(-1, e.getMessage());
         } catch (Exception e) {
             log.error("更新域通知收件人失败", e);
-            throw new OciException(-1, "更新域通知收件人失败: " + e.getMessage());
+            throw new OciException(-1, "No se pudieron actualizar los destinatarios del dominio: " + e.getMessage());
         }
     }
 }

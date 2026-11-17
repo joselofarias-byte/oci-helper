@@ -76,7 +76,7 @@ public class BootVolumeServiceImpl implements IBootVolumeService {
                 }).collect(Collectors.toList());
             } catch (Exception e) {
                 log.error("获取引导卷列表失败", e);
-                throw new OciException(-1, "获取引导卷列表失败");
+                throw new OciException(-1, "No se pudieron obtener los volúmenes de arranque");
             }
         }
         customCache.put(CacheConstant.PREFIX_BOOT_VOLUME_PAGE + params.getOciCfgId(), bootVolumeInCache, 10 * 60 * 1000);
@@ -121,7 +121,7 @@ public class BootVolumeServiceImpl implements IBootVolumeService {
                     Long.parseLong(params.getBootVolumeVpu()));
         } catch (Exception e) {
             log.error("更改引导卷配置失败", e);
-            throw new OciException(-1, "更改引导卷配置失败");
+            throw new OciException(-1, "No se pudo modificar el volumen de arranque");
         }
     }
 
