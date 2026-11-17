@@ -150,7 +150,7 @@ public class SysServiceImpl implements ISysService {
             // Record login failure but don't send message for wrong account
             boolean autoBlacklisted = ipSecurityService.recordLoginFailure(clientIp);
             if (autoBlacklisted) {
-                sendMessage(String.format("⚠️ IP: %s 因登录失败次数过多已被自动拉黑！", clientIp));
+                sendMessage(String.format("⚠️ IP: %s bloqueada durante 60 segundos por demasiados intentos fallidos.", clientIp));
             }
             throw new OciException(-1, "Usuario o contraseña incorrectos");
         }
@@ -162,7 +162,7 @@ public class SysServiceImpl implements ISysService {
                 boolean autoBlacklisted = ipSecurityService.recordLoginFailure(clientIp);
                 if (autoBlacklisted) {
                     // IP just got blacklisted, only send blacklist notification
-                    sendMessage(String.format("⚠️ IP: %s 因登录失败次数过多已被自动拉黑！", clientIp));
+                    sendMessage(String.format("⚠️ IP: %s bloqueada durante 60 segundos por demasiados intentos fallidos.", clientIp));
                 } else {
                     // Not blacklisted yet, send detailed warning
                     sendMessage(String.format(
@@ -188,7 +188,7 @@ public class SysServiceImpl implements ISysService {
                 boolean autoBlacklisted = ipSecurityService.recordLoginFailure(clientIp);
                 if (autoBlacklisted) {
                     // IP just got blacklisted, only send blacklist notification
-                    sendMessage(String.format("⚠️ IP: %s 因登录失败次数过多已被自动拉黑！", clientIp));
+                    sendMessage(String.format("⚠️ IP: %s bloqueada durante 60 segundos por demasiados intentos fallidos.", clientIp));
                 } else {
                     // Not blacklisted yet, send detailed warning
                     sendMessage(String.format(
@@ -217,7 +217,7 @@ public class SysServiceImpl implements ISysService {
             boolean autoBlacklisted = ipSecurityService.recordLoginFailure(clientIp);
             if (autoBlacklisted) {
                 // IP just got blacklisted, only send blacklist notification
-                sendMessage(String.format("⚠️ IP: %s 因登录失败次数过多已被自动拉黑！", clientIp));
+                sendMessage(String.format("⚠️ IP: %s bloqueada durante 60 segundos por demasiados intentos fallidos.", clientIp));
             } else {
                 // Not blacklisted yet, send detailed warning
                 sendMessage(String.format(

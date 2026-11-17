@@ -4,7 +4,7 @@ services:
     build:
       context: ..
       dockerfile: Dockerfile.es
-    image: oci-helper-es:3.5.1-es2
+    image: oci-helper-es:3.5.1-es3
     restart: unless-stopped
     ports:
       - "127.0.0.1:8818:8818"

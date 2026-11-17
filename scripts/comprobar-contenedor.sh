@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 set -Eeuo pipefail
-IMAGE="${1:-oci-helper-es:3.5.1-es2}"
+IMAGE="${1:-oci-helper-es:3.5.1-es3}"
 NAME="oci-helper-es-smoke-$$"
 cleanup() { docker rm -fv "$NAME" >/dev/null 2>&1 || true; }
 trap cleanup EXIT

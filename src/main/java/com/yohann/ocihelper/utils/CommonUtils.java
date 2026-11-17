@@ -593,7 +593,7 @@ public class CommonUtils {
     }
 
     public static String getLatestVersion() {
-        return System.getenv().getOrDefault("OCI_HELPER_VERSION", "3.5.1-es2");
+        return System.getenv().getOrDefault("OCI_HELPER_VERSION", "3.5.1-es3");
     }
 
     public static String getLatestVersionBody() {

@@ -3,7 +3,7 @@ WORKDIR /src
 COPY pom.xml .
 RUN mvn -B -q dependency:go-offline
 COPY src ./src
-RUN mvn -B -q -Dtest=JwtSecurityTest,KeyStorageSecurityTest,AccessSecurityTest,SQLiteRuntimeTest verify
+RUN mvn -B -q -Dtest=JwtSecurityTest,KeyStorageSecurityTest,AccessSecurityTest,SQLiteRuntimeTest,IpSecurityLockoutTest verify
 
 # Extract the matching native library into the immutable image. Runtime SQLite
 # loading must not depend on extracting an executable .so under a tmpfs mount.
@@ -24,7 +24,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends openssh-client 
     && chmod 700 /home/ocihelper/.ssh
 COPY --from=builder /src/target/oci-helper-3.5.1.jar /opt/oci-helper.jar
 COPY --from=builder /src/sqlite-native/libsqlitejdbc.so /opt/sqlite-native/libsqlitejdbc.so
-ENV LANG=C.UTF-8 TZ=America/Montevideo OCI_HELPER_VERSION=3.5.1-es2
+ENV LANG=C.UTF-8 TZ=America/Montevideo OCI_HELPER_VERSION=3.5.1-es3
 WORKDIR /app/oci-helper
 USER 10001:10001
 RUN java -Dorg.sqlite.lib.path=/opt/sqlite-native -Dorg.sqlite.lib.name=libsqlitejdbc.so \

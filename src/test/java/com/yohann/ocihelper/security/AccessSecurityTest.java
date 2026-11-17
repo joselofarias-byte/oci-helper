@@ -40,4 +40,25 @@ class AccessSecurityTest {
     @Test void rejectsWeakPassword(){assertThrows(IllegalStateException.class,()->guard("jolufa","short",KEY).validate());}
     @Test void rejectsReusedJwtSecret(){assertThrows(IllegalStateException.class,()->guard("jolufa",KEY,KEY).validate());}
     @Test void acceptsIndependentStrongCredentials(){assertDoesNotThrow(()->guard("jolufa","long-and-valid-password",KEY).validate());}
+    @Test void automaticLockoutReturnsRetryAfterAndExplicitMessage() throws Exception {
+        AuthInterceptor a=auth();IpSecurityService security=(IpSecurityService)ReflectionTestUtils.getField(a,"ipSecurityService");
+        for(int i=0;i<5;i++)security.recordLoginFailure("127.0.0.1");
+        MockHttpServletResponse response=new MockHttpServletResponse();
+        assertFalse(a.preHandle(new MockHttpServletRequest("POST","/api/sys/login"),response,new Object()));
+        assertEquals(429,response.getStatus());assertEquals("60",response.getHeader("Retry-After"));
+        assertTrue(response.getContentAsString().contains("Demasiados intentos"));
+    }
+    @Test void loginDocumentRemainsAvailableDuringLockout() throws Exception {
+        AuthInterceptor a=auth();IpSecurityService security=(IpSecurityService)ReflectionTestUtils.getField(a,"ipSecurityService");
+        for(int i=0;i<5;i++)security.recordLoginFailure("127.0.0.1");
+        assertTrue(a.preHandle(new MockHttpServletRequest("GET","/login"),new MockHttpServletResponse(),new Object()));
+        assertTrue(a.preHandle(new MockHttpServletRequest("GET","/js/index.js"),new MockHttpServletResponse(),new Object()));
+    }
+    @Test void manualBlacklistStillBlocksApi() throws Exception {
+        AuthInterceptor a=auth();IpSecurityService security=(IpSecurityService)ReflectionTestUtils.getField(a,"ipSecurityService");
+        security.addToBlacklist("127.0.0.1");MockHttpServletResponse response=new MockHttpServletResponse();
+        assertFalse(a.preHandle(new MockHttpServletRequest("POST","/api/sys/login"),response,new Object()));
+        assertEquals(403,response.getStatus());assertNull(response.getHeader("Retry-After"));
+    }
+
 }

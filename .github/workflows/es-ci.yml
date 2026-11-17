@@ -27,9 +27,9 @@ jobs:
       - run: npm ci --ignore-scripts
       - run: npm run check:locale
       - run: bash -n scripts/instalar-es.sh
-      - run: mvn -B -Dtest=JwtSecurityTest,KeyStorageSecurityTest,AccessSecurityTest,SQLiteRuntimeTest verify
+      - run: mvn -B -Dtest=JwtSecurityTest,KeyStorageSecurityTest,AccessSecurityTest,SQLiteRuntimeTest,IpSecurityLockoutTest verify
       - run: bash -n scripts/comprobar-contenedor.sh
       - name: Construir imagen nativa
-        run: docker build -f Dockerfile.es -t oci-helper-es:3.5.1-es2 .
+        run: docker build -f Dockerfile.es -t oci-helper-es:3.5.1-es3 .
       - name: Probar SQLite y arranque real del contenedor
         run: bash scripts/comprobar-contenedor.sh

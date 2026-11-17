@@ -5,6 +5,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
 import java.util.*;
+import java.time.Clock;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.regex.Pattern;
 
@@ -29,6 +30,9 @@ public class IpSecurityService {
     
     // Max login failures before auto-blacklist
     private static final int MAX_LOGIN_FAILURES = 5;
+    private static final long AUTO_BLOCK_MS = 60_000L;
+    private final Map<String, Long> automaticBlocks = new ConcurrentHashMap<>();
+    private final Clock clock;
     
     // Login failure tracking window (15 minutes)
     private static final long FAILURE_TRACKING_WINDOW_MS = 15 * 60 * 1000;
@@ -47,6 +51,11 @@ public class IpSecurityService {
     );
     
     public IpSecurityService() {
+        this(Clock.systemUTC());
+    }
+
+    IpSecurityService(Clock clock) {
+        this.clock = clock;
         // Create dedicated cache instances for IP security
         this.ipBlacklistCache = new CustomExpiryGuavaCache<>();
         this.loginFailureCache = new CustomExpiryGuavaCache<>();
@@ -87,6 +96,8 @@ public class IpSecurityService {
      * @return true if blacklisted
      */
     public boolean isIpBlacklisted(String ip) {
+        if (ip == null || ip.isBlank()) return false;
+        if (isAutomaticallyBlocked(ip)) return true;
         // Direct match
         String cachedValue = ipBlacklistCache.get(ip);
         if (cachedValue != null) {
@@ -156,6 +167,7 @@ public class IpSecurityService {
         
         ipBlacklistCache.remove(ipOrRange);
         blacklistEntries.remove(ipOrRange);
+        automaticBlocks.remove(ipOrRange);
         
         log.info("Removed from blacklist: {} (remaining entries: {})", ipOrRange, blacklistEntries.size());
         return true;
@@ -167,6 +179,7 @@ public class IpSecurityService {
     public void clearBlacklist() {
         ipBlacklistCache.cleanUp();
         blacklistEntries.clear();
+        automaticBlocks.clear();
         log.info("Blacklist cleared");
     }
     
@@ -278,37 +291,34 @@ public class IpSecurityService {
      * @param ip IP address that failed login
      * @return true if IP was auto-blacklisted
      */
-    public boolean recordLoginFailure(String ip) {
-        if (ip == null || ip.isEmpty()) {
-            return false;
+    public synchronized boolean recordLoginFailure(String ip) {
+        if (ip == null || ip.isBlank() || isAutomaticallyBlocked(ip)) return false;
+        Integer count = loginFailureCache.get(ip);
+        int failures = (count == null ? 0 : count) + 1;
+        loginFailureCache.put(ip, failures, FAILURE_TRACKING_WINDOW_MS);
+        log.warn("Acceso fallido desde {}: {}/{}", ip, failures, MAX_LOGIN_FAILURES);
+        if (failures >= MAX_LOGIN_FAILURES) {
+            automaticBlocks.put(ip, clock.millis() + AUTO_BLOCK_MS);
+            loginFailureCache.remove(ip);
+            log.warn("IP {} bloqueada temporalmente durante 60 segundos", ip);
+            return true;
         }
-        
-        // Get current failure count
-        Integer currentFailures = loginFailureCache.get(ip);
-        int newFailureCount = (currentFailures == null ? 0 : currentFailures) + 1;
-        
-        // Update failure count with expiry window
-        loginFailureCache.put(ip, newFailureCount, FAILURE_TRACKING_WINDOW_MS);
-        
-        log.warn("Login failure recorded for IP: {}, failure count: {}/{}", 
-                ip, newFailureCount, MAX_LOGIN_FAILURES);
-        
-        // Check if threshold exceeded
-        if (newFailureCount >= MAX_LOGIN_FAILURES) {
-            // Auto-blacklist the IP
-            boolean added = addToBlacklist(ip);
-            if (added) {
-                log.error("IP {} has been AUTO-BLACKLISTED due to {} failed login attempts", 
-                        ip, newFailureCount);
-                // Clear failure count as IP is now blacklisted
-                loginFailureCache.remove(ip);
-                return true;
-            }
-        }
-        
         return false;
     }
-    
+
+    public boolean isAutomaticallyBlocked(String ip) {
+        if (ip == null) return false;
+        Long deadline = automaticBlocks.computeIfPresent(ip,
+                (key, expires) -> expires <= clock.millis() ? null : expires);
+        return deadline != null;
+    }
+
+    public long getRetryAfterSeconds(String ip) {
+        if (!isAutomaticallyBlocked(ip)) return 0;
+        Long deadline = automaticBlocks.get(ip);
+        return deadline == null ? 0 : Math.max(1, (deadline - clock.millis() + 999) / 1000);
+    }
+
     /**
      * Clear login failure count for an IP (called on successful login)
      * 
