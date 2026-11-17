@@ -46,7 +46,7 @@ public class GlobalExceptionHandler {
             return ResponseData.errorData(-1, message);
         } else {
             log.error("unknown Exception", e);
-            return ResponseData.errorData(-1, e.getLocalizedMessage());
+            return ResponseData.errorData(-1, "Error interno del servidor. Consulta los registros.");
         }
     }
 

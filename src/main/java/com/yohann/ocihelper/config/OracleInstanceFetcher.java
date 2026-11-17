@@ -220,7 +220,7 @@ public class OracleInstanceFetcher implements Closeable {
         String tenantId = user.getOciCfg().getTenantId();
         String domainUrl = com.yohann.ocihelper.utils.OciUtils.getDomain(identityClient, tenantId);
         if (StrUtil.isBlank(domainUrl)) {
-            throw new OciException(-1, "未找到活跃的 Identity Domain，无法重置密码");
+            throw new OciException(-1, "No se encontró un dominio de identidad activo para restablecer la contraseña");
         }
         try (IdentityDomainsClient domainsClient = newIdentityDomainsClient(domainUrl)) {
             // Step 1: resolve Classic OCID -> Identity Domain SCIM UUID
@@ -233,7 +233,7 @@ public class OracleInstanceFetcher implements Closeable {
             Users usersWrapper = listResp.getUsers();
             if (usersWrapper == null || usersWrapper.getResources() == null
                     || usersWrapper.getResources().isEmpty()) {
-                throw new OciException(-1, "在 Identity Domain 中未找到该用户: " + classicUserId);
+                throw new OciException(-1, "No se encontró al usuario en el dominio de identidad: " + classicUserId);
             }
             String scimUserId = usersWrapper.getResources().get(0).getId();
 
@@ -255,9 +255,9 @@ public class OracleInstanceFetcher implements Closeable {
             } catch (com.oracle.bmc.model.BmcException bmcEx) {
                 if (bmcEx.getStatusCode() == 401 || bmcEx.getStatusCode() == 403) {
                     throw new OciException(-1,
-                            "重置密码失败：API Key 对应用户权限不足。\n" +
-                            "请前往 OCI 控制台完成以下授权（一次性操作）：\n" +
-                            "身份证明 → 域 → Default 域 → 【管理员】标签页 → " +
+                            "La clave API no tiene permisos para restablecer la contraseña.\n" +
+                            "Configura los permisos en la consola OCI (una sola vez):\n" +
+                            "Identidad → Dominios → Dominio Default → Administradores → " +
                             "找到「用户管理员（User Administrator）」→ 添加当前 API Key 所属用户为成员，然后重试。");
                 }
                 throw bmcEx;
@@ -547,7 +547,7 @@ public class OracleInstanceFetcher implements Closeable {
                         .build());
         String password = uIPassword.getUIPassword().getPassword();
         log.info("用户:[{}],区域:[{}],成功创建/重置登录密码,新密码:【 {} 】",
-                user.getUsername(), user.getOciCfg().getRegion(), password);
+                user.getUsername(), user.getOciCfg().getRegion(), "[omitida]");
         return password;
     }
 
@@ -668,7 +668,7 @@ public class OracleInstanceFetcher implements Closeable {
         List<AvailabilityDomain> availabilityDomainList = listAvailabilityDomainsResponse.getItems();
         if (CollectionUtil.isEmpty(availabilityDomainList)) {
             log.error("用户:[{}],区域:[{}],可用域不足", user.getUsername(), user.getOciCfg().getRegion());
-            throw new OciException(-1, "可用域不足");
+            throw new OciException(-1, "No hay suficientes dominios de disponibilidad");
         }
         return availabilityDomainList;
     }
@@ -681,7 +681,7 @@ public class OracleInstanceFetcher implements Closeable {
         List<AvailabilityDomain> availabilityDomainList = listAvailabilityDomainsResponse.getItems();
         if (CollectionUtil.isEmpty(availabilityDomainList)) {
             log.error("用户:[{}],区域:[{}],可用域不足", user.getUsername(), user.getOciCfg().getRegion());
-            throw new OciException(-1, "可用域不足");
+            throw new OciException(-1, "No hay suficientes dominios de disponibilidad");
         }
         return availabilityDomainList;
     }
@@ -1310,9 +1310,8 @@ public class OracleInstanceFetcher implements Closeable {
                         .imageId(image.getId())
                         .bootVolumeSizeInGBs(user.getDisk())
                         .build())
-                // 将 root 密码存入实例的自由标签，方便后续查询（通知未配置时也能找回密码）
-                .freeformTags(StrUtil.isBlank(user.getRootPassword()) ? null :
-                        Collections.singletonMap(OciInstanceConstant.TAG_ROOT_PASSWORD, user.getRootPassword()))
+                // Las credenciales no se guardan en etiquetas de OCI.
+                .freeformTags(Collections.emptyMap())
                 .build();
     }
 
@@ -1567,7 +1566,7 @@ public class OracleInstanceFetcher implements Closeable {
             }
         }
         if (null == bootVolume) {
-            throw new OciException(-1, "引导卷不存在");
+            throw new OciException(-1, "El volumen de arranque no existe");
         }
         return bootVolume;
     }
@@ -1591,7 +1590,7 @@ public class OracleInstanceFetcher implements Closeable {
             }
         }
         if (CollectionUtil.isEmpty(bootVolumes)) {
-            throw new OciException(-1, "实例引导卷不存在");
+            throw new OciException(-1, "La instancia no tiene volumen de arranque");
         }
         return bootVolumes;
     }
@@ -1671,7 +1670,7 @@ public class OracleInstanceFetcher implements Closeable {
 
     public String updateInstanceState(String instanceId, InstanceActionEnum action) {
         if (action == null) {
-            throw new OciException(-1, "实例操作不存在");
+            throw new OciException(-1, "La operación de instancia no existe");
         }
 
         InstanceActionRequest request = InstanceActionRequest.builder()
@@ -1894,7 +1893,7 @@ public class OracleInstanceFetcher implements Closeable {
                 createInternetGateway(virtualNetworkClient, compartmentId, vcn);
             } catch (Exception e) {
                 log.error("用户:[{}],区域:[{}],创建 VCN 失败", user.getUsername(), user.getOciCfg().getRegion());
-                throw new OciException(-1, "创建 VCN 失败");
+                throw new OciException(-1, "No se pudo crear la VCN");
             }
         }
 
@@ -1912,7 +1911,7 @@ public class OracleInstanceFetcher implements Closeable {
                         .build());
             } catch (Exception e) {
                 log.error("添加ipv6 cidr 前缀失败", e);
-                throw new OciException(-1, "添加ipv6 cidr 前缀失败");
+                throw new OciException(-1, "No se pudo añadir el prefijo CIDR IPv6");
             } finally {
                 vcn = getVcnById(vcn.getId());
                 oldIpv6CidrBlocks = vcn.getIpv6CidrBlocks();
@@ -1930,7 +1929,7 @@ public class OracleInstanceFetcher implements Closeable {
                         CIDR_BLOCK, vcn));
             } catch (Exception e) {
                 log.error("用户:[{}],区域:[{}],创建子网失败,原因:[{}]", user.getUsername(), user.getOciCfg().getRegion(), e.getLocalizedMessage());
-                throw new OciException(-1, "创建子网失败");
+                throw new OciException(-1, "No se pudo crear la subred");
             }
         }
 
@@ -1951,7 +1950,7 @@ public class OracleInstanceFetcher implements Closeable {
                             log.warn("subnet ipv6CidrBlock: [{}] exists", subnetV6Cidr);
                         } else {
                             log.error("添加子网ipv6前缀失败", e);
-                            throw new OciException(-1, "添加子网ipv6前缀失败");
+                            throw new OciException(-1, "No se pudo añadir IPv6 a la subred");
                         }
                     }
                 }
@@ -1970,7 +1969,7 @@ public class OracleInstanceFetcher implements Closeable {
                 updateRouteRules(gateway, vcn);
             } catch (Exception e) {
                 log.error("用户:[{}],区域:[{}],创建网关失败,原因:{}", user.getUsername(), user.getOciCfg().getRegion(), e.getLocalizedMessage());
-                throw new OciException(-1, "创建网关失败");
+                throw new OciException(-1, "No se pudo crear la puerta de enlace");
             }
         } else {
             for (InternetGateway gateway : listInternetGatewaysResponse.getItems()) {
@@ -1999,18 +1998,16 @@ public class OracleInstanceFetcher implements Closeable {
      * password 为 null 或空字符串时删除该标签；否则写入新值。
      */
     public void updateRootPasswordTag(String instanceId, String password) {
-        // 先获取当前实例的全量 freeformTags，避免覆盖其他标签
+        if (StrUtil.isNotBlank(password)) {
+            throw new OciException(-1, "Guardar contraseñas en etiquetas está desactivado. Cambia la contraseña dentro de la instancia.");
+        }
+        // Conservar otras etiquetas al eliminar una contraseña antigua.
         Instance instance = getInstanceById(instanceId);
         Map<String, String> tags = new HashMap<>(instance.getFreeformTags() != null
                 ? instance.getFreeformTags() : Collections.emptyMap());
 
-        if (StrUtil.isBlank(password)) {
-            // 密码为空 → 删除标签
-            tags.remove(OciInstanceConstant.TAG_ROOT_PASSWORD);
-        } else {
-            // 密码非空 → 写入或更新标签
-            tags.put(OciInstanceConstant.TAG_ROOT_PASSWORD, password);
-        }
+        // Remove legacy password tags; never write a credential into metadata.
+        tags.remove(OciInstanceConstant.TAG_ROOT_PASSWORD);
 
         computeClient.updateInstance(UpdateInstanceRequest.builder()
                 .instanceId(instanceId)

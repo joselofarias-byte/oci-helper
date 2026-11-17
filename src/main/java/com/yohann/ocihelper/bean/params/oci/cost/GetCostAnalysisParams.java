@@ -13,7 +13,7 @@ import lombok.Data;
 public class GetCostAnalysisParams {
 
     /** OCI config ID */
-    @NotBlank(message = "配置ID不能为空")
+    @NotBlank(message = "El ID de configuración es obligatorio")
     private String ociCfgId;
 
     /**
@@ -22,21 +22,21 @@ public class GetCostAnalysisParams {
      * COST_BY_SERVICE_AND_SKU / COST_BY_SERVICE_AND_TAG /
      * COST_BY_COMPARTMENT / MONTHLY_COST
      */
-    @NotBlank(message = "报告类型不能为空")
+    @NotBlank(message = "El tipo de informe es obligatorio")
     private String reportType;
 
     /** Start date (inclusive), format: yyyy-MM-dd */
-    @NotBlank(message = "开始日期不能为空")
+    @NotBlank(message = "La fecha de inicio es obligatoria")
     private String startDate;
 
     /** End date (inclusive), format: yyyy-MM-dd */
-    @NotBlank(message = "结束日期不能为空")
+    @NotBlank(message = "La fecha de fin es obligatoria")
     private String endDate;
 
     /**
      * Granularity: DAILY or MONTHLY
      */
-    @NotBlank(message = "粒度不能为空")
+    @NotBlank(message = "La agrupación es obligatoria")
     private String granularity;
 
     /**

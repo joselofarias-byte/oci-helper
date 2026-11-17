@@ -11,8 +11,8 @@ import lombok.Getter;
 @Getter
 public enum AccountStatusEnum {
 
-    ACTIVE("ACTIVE", "活跃"),
-    INACTIVE("INACTIVE", "失效"),
+    ACTIVE("ACTIVE", "Activa"),
+    INACTIVE("INACTIVE", "Inactiva"),
     ;
 
     /** Value stored in DB column account_status */

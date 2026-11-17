@@ -165,7 +165,7 @@ public class CostAnalysisServiceImpl implements ICostAnalysisService {
             throw oe;
         } catch (Exception e) {
             log.error("查询成本分析失败", e);
-            throw new OciException(-1, "查询成本分析失败：" + e.getMessage());
+            throw new OciException(-1, "Error al consultar costes: " + e.getMessage());
         }
     }
 

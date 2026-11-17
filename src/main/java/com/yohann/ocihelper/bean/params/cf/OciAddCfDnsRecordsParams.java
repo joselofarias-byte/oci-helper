@@ -15,13 +15,13 @@ import jakarta.validation.constraints.NotNull;
 @Data
 public class OciAddCfDnsRecordsParams {
 
-    @NotBlank(message = "配置ID不能为空")
+    @NotBlank(message = "El ID de configuración es obligatorio")
     private String cfCfgId;
 //    @NotBlank(message = "域名前缀不能为空")
     private String prefix;
-    @NotBlank(message = "类型不能为空")
+    @NotBlank(message = "El tipo es obligatorio")
     private String type;
-    @NotBlank(message = "ip地址不能为空")
+    @NotBlank(message = "La dirección IP es obligatoria")
     private String ipAddress;
 //    @NotNull(message = "是否代理不能为空")
     private boolean proxied;

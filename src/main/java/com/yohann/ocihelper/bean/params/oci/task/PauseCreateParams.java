@@ -15,6 +15,6 @@ import java.util.List;
 @Data
 public class PauseCreateParams {
 
-    @NotEmpty(message = "id列表不能为空")
+    @NotEmpty(message = "La lista de ID es obligatoria")
     private List<String> idList;
 }

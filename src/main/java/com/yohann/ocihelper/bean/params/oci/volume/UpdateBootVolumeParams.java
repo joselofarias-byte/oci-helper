@@ -14,12 +14,12 @@ import jakarta.validation.constraints.NotBlank;
 @Data
 public class UpdateBootVolumeParams {
 
-    @NotBlank(message = "配置id不能为空")
+    @NotBlank(message = "El ID de configuración es obligatorio")
     private String ociCfgId;
-    @NotBlank(message = "引导卷id不能为空")
+    @NotBlank(message = "El ID del volumen de arranque es obligatorio")
     private String bootVolumeId;
-    @NotBlank(message = "引导卷大小不能为空")
+    @NotBlank(message = "El tamaño del volumen de arranque es obligatorio")
     private String bootVolumeSize;
-    @NotBlank(message = "引导卷VPU不能为空")
+    @NotBlank(message = "Las VPU del volumen de arranque son obligatorias")
     private String bootVolumeVpu;
 }

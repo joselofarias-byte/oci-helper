@@ -17,6 +17,6 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 public class AddIpDataParams {
 
-    @NotBlank(message = "ip地址不能为空")
+    @NotBlank(message = "La dirección IP es obligatoria")
     private String ip;
 }

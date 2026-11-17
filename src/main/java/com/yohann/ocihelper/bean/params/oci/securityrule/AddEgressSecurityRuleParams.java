@@ -14,9 +14,9 @@ import jakarta.validation.constraints.NotBlank;
 @Data
 public class AddEgressSecurityRuleParams {
 
-    @NotBlank(message = "api配置id不能为空")
+    @NotBlank(message = "El ID de configuración API es obligatorio")
     private String ociCfgId;
-    @NotBlank(message = "vcnId不能为空")
+    @NotBlank(message = "El ID de VCN es obligatorio")
     private String vcnId;
     private EgressInfo outboundRule;
 

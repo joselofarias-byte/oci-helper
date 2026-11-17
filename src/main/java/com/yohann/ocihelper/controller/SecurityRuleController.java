@@ -59,6 +59,6 @@ public class SecurityRuleController {
     @RequestMapping("/release")
     public ResponseData<Void> release(@Validated @RequestBody ReleaseSecurityRuleByVcnParams params){
         securityRuleService.releaseByVcn(params);
-        return ResponseData.successData("放行安全列表所有端口及协议成功");
+        return ResponseData.successData("Todos los puertos y protocolos permitidos");
     }
 }

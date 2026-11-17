@@ -100,7 +100,7 @@ public class LimitsServiceImpl implements ILimitsService {
             throw oe;
         } catch (Exception e) {
             log.error("查询配额失败", e);
-            throw new OciException(-1, "查询配额失败：" + e.getMessage());
+            throw new OciException(-1, "Error al consultar cuotas: " + e.getMessage());
         }
     }
 
@@ -118,7 +118,7 @@ public class LimitsServiceImpl implements ILimitsService {
             throw oe;
         } catch (Exception e) {
             log.error("获取服务列表失败", e);
-            throw new OciException(-1, "获取服务列表失败：" + e.getMessage());
+            throw new OciException(-1, "Error al obtener servicios: " + e.getMessage());
         }
     }
 }

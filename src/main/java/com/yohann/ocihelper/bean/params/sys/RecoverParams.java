@@ -18,8 +18,8 @@ import java.util.List;
 @Data
 public class RecoverParams {
 
-    @Size(min = 1, max = 1, message = "文件数量大于1")
-    @NotEmpty(message = "文件列表不能为空")
+    @Size(min = 1, max = 1, message = "Solo se admite un archivo")
+    @NotEmpty(message = "La lista de archivos es obligatoria")
     private List<MultipartFile> fileList;
 
     private String encryptionKey;

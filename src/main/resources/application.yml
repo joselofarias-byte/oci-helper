@@ -4,8 +4,9 @@ server:
 # --------------------------------------- 用户自定义修改项 ------------------------------------
 # web登录管理员账号密码
 web:
-  account: yohann1
-  password: yohann1
+  account: ${OCI_HELPER_ACCOUNT:jolufa}
+  password: ${OCI_HELPER_PASSWORD}
+  jwt-secret: ${OCI_HELPER_JWT_SECRET}
 # --------------------------------------- 用户自定义修改项 ------------------------------------
 
 spring:
@@ -30,6 +31,13 @@ mybatis-plus:
   mapper-locations: classpath*:com/yohann/ocihelper/mapper/xml/*.xml
 
 logging:
+  file:
+    name: ${OCI_HELPER_LOG_FILE:/app/oci-helper/logs/oci-helper.log}
+  logback:
+    rollingpolicy:
+      max-file-size: 10MB
+      max-history: 3
+      total-size-cap: 50MB
   pattern:
     # console: "%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] %-5level %logger{36} - %msg%n"
     console: "%d{yyyy-MM-dd HH:mm:ss} %-5level %msg%n"
@@ -40,8 +48,9 @@ logging:
 
 # 密钥文件存放目录（如果是docker部署则不用修改）
 oci-cfg:
+  broadcast-enabled: false
   boot-broadcast-url: https://backend.oci-helper.de5.net/api/boot
   boot-broadcast-channel: https://backend.oci-helper.de5.net/api/notify
 #  key-dir-path: /app/oci-helper/keys
 #  key-dir-path: C:\Users\Yohann\Desktop
-  key-dir-path: C:\Users\yohann_fan\Desktop\test\oci-helper
+  key-dir-path: ${OCI_HELPER_KEYS_DIR:/app/oci-helper/keys}

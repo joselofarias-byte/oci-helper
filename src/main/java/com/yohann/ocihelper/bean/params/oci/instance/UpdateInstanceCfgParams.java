@@ -17,8 +17,8 @@ import jakarta.validation.constraints.NotBlank;
 @Data
 public class UpdateInstanceCfgParams extends GetInstanceCfgInfoParams {
 
-    @NotBlank(message = "cpu不能为空")
+    @NotBlank(message = "La CPU es obligatoria")
     private String ocpus;
-    @NotBlank(message = "内存不能为空")
+    @NotBlank(message = "La memoria es obligatoria")
     private String memory;
 }

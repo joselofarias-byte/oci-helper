@@ -177,7 +177,7 @@ public class SecurityRuleServiceImpl implements ISecurityRuleService {
                 }
             } catch (Exception e) {
                 log.error("获取安全列表规则失败", e);
-                throw new OciException(-1, "获取安全列表规则失败");
+                throw new OciException(-1, "No se pudieron obtener las reglas de seguridad");
             }
         }
 
@@ -232,7 +232,7 @@ public class SecurityRuleServiceImpl implements ISecurityRuleService {
             fetcher.updateSecurityRuleList(vcn, updateSecurityRuleListParams);
         } catch (Exception e) {
             log.error("新增入站规则失败", e);
-            throw new OciException(-1, "新增入站规则失败：" + e.getMessage());
+            throw new OciException(-1, "No se pudo añadir la regla de entrada: " + e.getMessage());
         }
     }
 
@@ -271,7 +271,7 @@ public class SecurityRuleServiceImpl implements ISecurityRuleService {
             fetcher.updateSecurityRuleList(vcn, updateSecurityRuleListParams);
         } catch (Exception e) {
             log.error("新增出站规则失败", e);
-            throw new OciException(-1, "新增出站规则失败：" + e.getMessage());
+            throw new OciException(-1, "No se pudo añadir la regla de salida: " + e.getMessage());
         }
     }
 
@@ -309,7 +309,7 @@ public class SecurityRuleServiceImpl implements ISecurityRuleService {
                     .build());
         } catch (Exception e) {
             log.error("删除安全规则失败", e);
-            throw new OciException(-1, "删除安全规则失败");
+            throw new OciException(-1, "No se pudo eliminar la regla de seguridad");
         }
         customCache.remove(CacheConstant.PREFIX_INGRESS_SECURITY_RULE_PAGE + params.getOciCfgId());
         customCache.remove(CacheConstant.PREFIX_EGRESS_SECURITY_RULE_PAGE + params.getOciCfgId());
@@ -328,7 +328,7 @@ public class SecurityRuleServiceImpl implements ISecurityRuleService {
         } catch (Exception e) {
             log.error("用户:[{}],放行 vcn:[{}] 安全列表所有端口及协议失败,原因:{}",
                     params.getOciCfgId(), params.getVcnId(), e.getLocalizedMessage(), e);
-            throw new OciException(-1, "放行安全列表所有端口及协议失败");
+            throw new OciException(-1, "No se pudieron abrir todos los puertos y protocolos");
         }
         customCache.remove(CacheConstant.PREFIX_INGRESS_SECURITY_RULE_PAGE + params.getOciCfgId());
         customCache.remove(CacheConstant.PREFIX_EGRESS_SECURITY_RULE_PAGE + params.getOciCfgId());
@@ -346,7 +346,7 @@ public class SecurityRuleServiceImpl implements ISecurityRuleService {
         } else if (split.length == 2) {
             return Tuple2.of(Integer.valueOf(split[0]), Integer.valueOf(split[1]));
         } else {
-            throw new OciException(-1, "格式有误：" + portRangeStr);
+            throw new OciException(-1, "Formato no válido: " + portRangeStr);
         }
     }
 }

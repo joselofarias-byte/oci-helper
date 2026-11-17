@@ -1,0 +1,1 @@
+{"name":"oci-helper-es-localization","private":true,"scripts":{"localize":"node scripts/localize.cjs","check:locale":"node scripts/localize.cjs --check"},"devDependencies":{"acorn":"8.15.0"}}

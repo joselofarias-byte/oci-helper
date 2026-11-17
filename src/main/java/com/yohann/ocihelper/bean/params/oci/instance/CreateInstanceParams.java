@@ -16,25 +16,25 @@ import jakarta.validation.constraints.NotNull;
 @Data
 public class CreateInstanceParams {
 
-    @NotBlank(message = "配置id不能为空")
+    @NotBlank(message = "El ID de configuración es obligatorio")
     private String userId;
-    @NotBlank(message = "CPU不能为空")
+    @NotBlank(message = "La CPU es obligatoria")
     private String ocpus;
-    @NotBlank(message = "内存不能为空")
+    @NotBlank(message = "La memoria es obligatoria")
     private String memory;
-    @NotNull(message = "磁盘空间不能为空")
+    @NotNull(message = "El espacio en disco es obligatorio")
     private Integer disk;
-    @NotBlank(message = "系统架构不能为空")
+    @NotBlank(message = "La arquitectura es obligatoria")
     private String architecture;
-    @NotNull(message = "时间间隔不能为空")
+    @NotNull(message = "El intervalo es obligatorio")
     private Integer interval;
-    @NotNull(message = "创建数目不能为空")
+    @NotNull(message = "La cantidad de instancias es obligatoria")
     private Integer createNumbers;
-    @NotBlank(message = "系统类型不能为空")
+    @NotBlank(message = "El sistema operativo es obligatorio")
     private String operationSystem;
-    @NotBlank(message = "root密码不能为空")
+    @NotBlank(message = "La contraseña de root es obligatoria")
     private String rootPassword;
 
-    private boolean joinChannelBroadcast = true;
+    private boolean joinChannelBroadcast = false;
 
 }

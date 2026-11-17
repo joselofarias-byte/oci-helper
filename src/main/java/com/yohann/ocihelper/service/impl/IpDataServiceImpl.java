@@ -62,7 +62,7 @@ public class IpDataServiceImpl extends ServiceImpl<IpDataMapper, IpData> impleme
 
             // Check API response status
             if (!"success".equals(json.getStr("status"))) {
-                throw new OciException(-1, "IP查询失败: " + json.getStr("message"));
+                throw new OciException(-1, "Error al consultar la IP: " + json.getStr("message"));
             }
 
             IpData ipData = new IpData();
@@ -84,7 +84,7 @@ public class IpDataServiceImpl extends ServiceImpl<IpDataMapper, IpData> impleme
             this.save(ipData);
         } catch (Exception e) {
             log.error("Failed to add IP data for: {}", params.getIp(), e);
-            throw new OciException(-1, "IP数据添加失败: " + e.getMessage());
+            throw new OciException(-1, "Error al añadir datos IP: " + e.getMessage());
         }
     }
 
@@ -151,14 +151,14 @@ public class IpDataServiceImpl extends ServiceImpl<IpDataMapper, IpData> impleme
     @Override
     @Transactional(rollbackFor = Exception.class)
     public void updateIpData(UpdateIpDataParams params) {
-        IpData ipData = Optional.ofNullable(this.getById(params.getId())).orElseThrow(() -> new OciException(-1, "当前记录不存在"));
+        IpData ipData = Optional.ofNullable(this.getById(params.getId())).orElseThrow(() -> new OciException(-1, "El registro no existe"));
         try {
             String jsonStr = HttpUtil.get(String.format("http://ip-api.com/json/%s?fields=status,message,country,regionName,city,lat,lon,org,as,query", ipData.getIp()));
             JSONObject json = JSONUtil.parseObj(jsonStr);
 
             // Check API response status
             if (!"success".equals(json.getStr("status"))) {
-                throw new OciException(-1, "IP查询失败: " + json.getStr("message"));
+                throw new OciException(-1, "Error al consultar la IP: " + json.getStr("message"));
             }
 
             this.update(new LambdaUpdateWrapper<IpData>().eq(IpData::getId, params.getId())
@@ -172,7 +172,7 @@ public class IpDataServiceImpl extends ServiceImpl<IpDataMapper, IpData> impleme
                     .set(IpData::getLng, json.getDouble("lon")));
         } catch (Exception e) {
             log.error("Failed to update IP data for: {}", ipData.getIp(), e);
-            throw new OciException(-1, "IP数据更新失败: " + e.getMessage());
+            throw new OciException(-1, "Error al actualizar datos IP: " + e.getMessage());
         }
     }
 

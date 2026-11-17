@@ -15,9 +15,9 @@ import jakarta.validation.constraints.NotBlank;
 @Data
 public class LoginParams {
 
-    @NotBlank(message = "账号不能为空")
+    @NotBlank(message = "El usuario es obligatorio")
     private String account;
-    @NotBlank(message = "密码不能为空")
+    @NotBlank(message = "La contraseña es obligatoria")
     private String password;
     private Integer mfaCode;
 }

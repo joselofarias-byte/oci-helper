@@ -17,12 +17,12 @@ import jakarta.validation.constraints.NotNull;
 @Data
 public class AddCfgParams {
 
-    @NotBlank(message = "配置名称不能为空")
+    @NotBlank(message = "El nombre de configuración es obligatorio")
     private String username;
 
-    @NotBlank(message = "配置不能为空")
+    @NotBlank(message = "La configuración es obligatoria")
     private String ociCfgStr;
 
-    @NotNull(message = "私钥不能为空")
+    @NotNull(message = "La clave privada es obligatoria")
     private MultipartFile file;
 }

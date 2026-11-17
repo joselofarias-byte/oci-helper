@@ -117,7 +117,7 @@ public class AiChatController {
     @GetMapping(value = "/removeCache")
     public ResponseData<Void> removeCache(@RequestParam("sessionId") String sessionId) {
         customCache.remove(sessionId);
-        return ResponseData.successData("会话内容已清除");
+        return ResponseData.successData("Conversación eliminada");
     }
 
     @GetMapping(value = "/stream", produces = MediaType.TEXT_EVENT_STREAM_VALUE)
@@ -132,7 +132,7 @@ public class AiChatController {
         if (StringUtils.isBlank(apiKey)) {
             OciKv cfg = kvService.getOne(new LambdaQueryWrapper<OciKv>().eq(OciKv::getCode, SysCfgEnum.SILICONFLOW_AI_API.getCode()));
             if (null == cfg || StringUtils.isBlank(cfg.getValue())) {
-                return Flux.just("抱歉，您未配置API秘钥，服务暂时不可用。");
+                return Flux.just("Configura una clave API para utilizar el asistente");
             } else {
                 apiKey = cfg.getValue();
                 customCache.put(SysCfgEnum.SILICONFLOW_AI_API.getCode(), apiKey, 24 * 60 * 60 * 1000);
@@ -155,7 +155,7 @@ public class AiChatController {
             if (enableInternet != null && enableInternet) {
                 return searchService.searchWithHtml(message)
                         .flatMapMany(results -> {
-                            String prompt = message + "\n根据以下内容回答：\n" +
+                            String prompt = message + "\nResponde utilizando el siguiente contenido:\n" +
                                     String.join("\n", results);
 
                             return chatClient
@@ -178,7 +178,7 @@ public class AiChatController {
                                     .onErrorResume(error -> {
                                         // 错误处理
                                         log.error("Stream error: ", error);
-                                        return Flux.just("抱歉，处理您的请求时出现了错误。");
+                                        return Flux.just("Error al procesar la solicitud");
                                     });
                         });
             } else {
@@ -199,12 +199,12 @@ public class AiChatController {
                         .map(list -> String.join("", list))
                         .onErrorResume(error -> {
                             log.error("Stream error: ", error);
-                            return Flux.just("抱歉，处理您的请求时出现了错误。");
+                            return Flux.just("Error al procesar la solicitud");
                         });
             }
         } catch (Exception e) {
             log.error("Chat error: ", e);
-            return Flux.just("抱歉，服务暂时不可用。");
+            return Flux.just("Servicio temporalmente no disponible");
         }
     }
 }

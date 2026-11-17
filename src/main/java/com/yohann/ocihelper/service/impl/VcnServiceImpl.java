@@ -59,7 +59,7 @@ public class VcnServiceImpl implements IVcnService {
                 }).collect(Collectors.toList());
             } catch (Exception e) {
                 log.error("获取VCN列表失败", e);
-                throw new OciException(-1, "获取VCN列表失败");
+                throw new OciException(-1, "No se pudieron obtener las VCN");
             }
         }
 
@@ -80,7 +80,7 @@ public class VcnServiceImpl implements IVcnService {
                 fetcher.deleteVcnById(vcnId);
             } catch (Exception e) {
                 log.error("删除VCN：失败", vcnName, e);
-                throw new OciException(-1, "删除 VCN 失败");
+                throw new OciException(-1, "No se pudo eliminar la VCN");
             }
         });
     }

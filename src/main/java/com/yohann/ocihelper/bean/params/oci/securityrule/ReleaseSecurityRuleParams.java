@@ -15,6 +15,6 @@ import lombok.Data;
 @Data
 public class ReleaseSecurityRuleParams {
 
-    @NotBlank(message = "配置id不能为空")
+    @NotBlank(message = "El ID de configuración es obligatorio")
     private String ociCfgId;
 }

@@ -12,11 +12,11 @@ import jakarta.validation.constraints.NotBlank;
 @Data
 public class GetLimitsParams {
 
-    @NotBlank(message = "配置ID不能为空")
+    @NotBlank(message = "El ID de configuración es obligatorio")
     private String ociCfgId;
 
     /** 指定区域，如 ap-seoul-1；必填 */
-    @NotBlank(message = "区域不能为空")
+    @NotBlank(message = "La región es obligatoria")
     private String region;
 
     /** 按服务名称筛选，如 compute；留空则查询全部 */

@@ -16,9 +16,9 @@ import lombok.EqualsAndHashCode;
 @Data
 public class AutoRescueParams extends GetInstanceCfgInfoParams {
 
-    @NotBlank(message = "实例名称不能为空")
+    @NotBlank(message = "El nombre de instancia es obligatorio")
     private String name;
 
-    @NotNull(message = "keepBackupVolume不能为空")
+    @NotNull(message = "Debes indicar si se conserva la copia del volumen")
     private Boolean keepBackupVolume = true;
 }

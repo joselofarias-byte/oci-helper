@@ -30,7 +30,7 @@ public class LimitsController {
      */
     @PostMapping("/query")
     public ResponseData<GetLimitsRsp> query(@Validated @RequestBody GetLimitsParams params) {
-        return ResponseData.successData(limitsService.getLimits(params), "查询配额成功");
+        return ResponseData.successData(limitsService.getLimits(params), "Cuotas obtenidas");
     }
 
     /**
@@ -44,6 +44,6 @@ public class LimitsController {
     @GetMapping("/services")
     public ResponseData<List<String>> services(@RequestParam("ociCfgId") String ociCfgId,
                                                @RequestParam("region") String region) {
-        return ResponseData.successData(limitsService.getServiceNames(ociCfgId, region), "获取服务列表成功");
+        return ResponseData.successData(limitsService.getServiceNames(ociCfgId, region), "Lista de servicios obtenida");
     }
 }

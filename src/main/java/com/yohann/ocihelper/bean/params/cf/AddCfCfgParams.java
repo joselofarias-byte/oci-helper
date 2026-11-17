@@ -13,10 +13,10 @@ import jakarta.validation.constraints.NotBlank;
 @Data
 public class AddCfCfgParams {
 
-    @NotBlank(message = "域名不能为空")
+    @NotBlank(message = "El dominio es obligatorio")
     private String domain;
-    @NotBlank(message = "区域ID不能为空")
+    @NotBlank(message = "El ID de zona es obligatorio")
     private String zoneId;
-    @NotBlank(message = "API令牌不能为空")
+    @NotBlank(message = "El token API es obligatorio")
     private String apiToken;
 }

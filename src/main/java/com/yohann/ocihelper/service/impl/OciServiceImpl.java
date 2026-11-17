@@ -153,18 +153,10 @@ public class OciServiceImpl implements IOciService {
         List<OciUser> ociUserList = userService
                 .list(new LambdaQueryWrapper<OciUser>().eq(OciUser::getUsername, params.getUsername()));
         if (ociUserList.size() != 0) {
-            throw new OciException(-1, "当前配置名称已存在");
+            throw new OciException(-1, "El nombre de configuración ya existe");
         }
 
-        String priKeyPath = keyDirPath + File.separator + params.getFile().getOriginalFilename();
-        File priKey = FileUtil.touch(priKeyPath);
-        try (InputStream inputStream = params.getFile().getInputStream();
-             BufferedOutputStream bufferedOutputStream = new BufferedOutputStream(
-                     Files.newOutputStream(priKey.toPath()))) {
-            IoUtil.copy(inputStream, bufferedOutputStream);
-        } catch (Exception e) {
-            throw new OciException(-1, "写入私钥文件失败");
-        }
+        String priKeyPath = com.yohann.ocihelper.utils.SecureKeyStorage.save(keyDirPath, params.getFile());
 
         Map<String, String> ociCfgMap = CommonUtils.getOciCfgFromStr(params.getOciCfgStr());
         OciUser ociUser = OciUser.builder()
@@ -194,7 +186,7 @@ public class OciServiceImpl implements IOciService {
         } catch (Exception e) {
             log.error("配置:[{}],区域:[{}],不生效,错误信息:[{}]",
                     ociUser.getUsername(), ociUser.getOciRegion(), e.getLocalizedMessage());
-            throw new OciException(-1, "配置不生效，请检查密钥与配置项是否准确无误，注意：新生成的API需要等待10分钟左右生效");
+            throw new OciException(-1, "La configuración no funciona. Comprueba la clave y los parámetros; una clave API nueva puede tardar unos 10 minutos en activarse");
         }
         // 先保存，后续异步补全租户名称、创建时间、套餐类型
         userService.save(ociUser);
@@ -246,7 +238,7 @@ public class OciServiceImpl implements IOciService {
     public void removeCfg(IdListParams params) {
         params.getIdList().forEach(id -> {
             if (createTaskService.count(new LambdaQueryWrapper<OciCreateTask>().eq(OciCreateTask::getUserId, id)) > 0) {
-                throw new OciException(-1, "配置:" + userService.getById(id).getUsername() + " 存在开机任务,无法删除,请先停止开机任务");
+                throw new OciException(-1, "Configuración: " + userService.getById(id).getUsername() + " tiene tareas de creación. Detén esas tareas antes de eliminarla");
             }
         });
         userService.removeBatchByIds(params.getIdList());
@@ -293,7 +285,7 @@ public class OciServiceImpl implements IOciService {
                 Float.parseFloat(params.getMemory()),
                 Long.valueOf(params.getDisk()),
                 params.getCreateNumbers(),
-                params.getRootPassword());
+                "[omitida]");
 
         sysService.sendMessage(beginCreateMsg);
     }
@@ -321,7 +313,7 @@ public class OciServiceImpl implements IOciService {
                         .collect(Collectors.toList()));
             } catch (Exception e) {
                 log.error("获取实例信息失败", e);
-                throw new OciException(-1, "获取实例信息失败");
+                throw new OciException(-1, "No se pudo obtener la instancia");
             }
         } else {
             rsp.setInstanceList(instanceInfos);
@@ -381,13 +373,13 @@ public class OciServiceImpl implements IOciService {
     public void changeIp(ChangeIpParams params) {
         params.getCidrList().forEach(cidr -> {
             if (!CommonUtils.isValidCidr(cidr)) {
-                throw new OciException(-1, "无效的CIDR网段:" + cidr);
+                throw new OciException(-1, "Red CIDR no válida: " + cidr);
             }
         });
 
         if (params.isChangeCfDns()) {
             if (StrUtil.isBlank(params.getSelectedDomainCfgId()) || StrUtil.isBlank(params.getDomainPrefix())) {
-                throw new OciException(-1, "域名或域名前缀不能为空");
+                throw new OciException(-1, "El dominio y su prefijo son obligatorios");
             }
         }
 
@@ -407,7 +399,7 @@ public class OciServiceImpl implements IOciService {
                     instance.getDisplayName(), currentIp);
             sysService.sendMessage(message);
         } catch (Exception e) {
-            throw new OciException(-1, "获取实例信息失败");
+            throw new OciException(-1, "No se pudo obtener la instancia");
         }
 
         addTask(CommonUtils.CHANGE_IP_TASK_PREFIX + params.getInstanceId(), () -> execChange(
@@ -466,7 +458,7 @@ public class OciServiceImpl implements IOciService {
         // Step 1: load the existing task record
         OciCreateTask existingTask = createTaskService.getById(params.getTaskId());
         if (existingTask == null) {
-            throw new OciException(-1, "任务不存在");
+            throw new OciException(-1, "La tarea no existe");
         }
 
         // Step 2: stop the currently running scheduled future (does NOT delete DB
@@ -649,7 +641,7 @@ public class OciServiceImpl implements IOciService {
                 try {
                     createInstance(item);
                 } catch (Exception e) {
-                    throw new OciException(-1, "创建开机任务失败");
+                    throw new OciException(-1, "No se pudo crear la tarea");
                 }
             }, delaySeconds, TimeUnit.SECONDS);
         }
@@ -659,7 +651,7 @@ public class OciServiceImpl implements IOciService {
     public String uploadCfg(UploadCfgParams params) {
         params.getFileList().forEach(x -> {
             if (!x.getOriginalFilename().contains(".ini") && !x.getOriginalFilename().contains(".txt")) {
-                throw new OciException(-1, "文件必须是.txt或者.ini的文本文件");
+                throw new OciException(-1, "El archivo debe ser texto .txt o .ini");
             }
         });
 
@@ -679,7 +671,7 @@ public class OciServiceImpl implements IOciService {
                 .peek(ociUser -> {
                     // 重复名称属于输入错误，直接打断整批
                     if (!seenUsernames.add(ociUser.getUsername())) {
-                        throw new OciException(-1, "名称: " + ociUser.getUsername() + " 重复,添加配置失败");
+                        throw new OciException(-1, "Nombre: " + ociUser.getUsername() + " duplicado; no se pudo añadir la configuración");
                     }
                     ociUser.setId(IdUtil.randomUUID());
                     ociUser.setOciKeyPath(keyDirPath + File.separator + ociUser.getOciKeyPath());
@@ -783,7 +775,7 @@ public class OciServiceImpl implements IOciService {
         } catch (Exception e) {
             log.error("用户:[{}],区域:[{}] 更新实例状态失败,错误详情:[{}]",
                     sysUserDTO.getUsername(), sysUserDTO.getOciCfg().getRegion(), e.getLocalizedMessage());
-            throw new OciException(-1, "更新实例状态失败");
+            throw new OciException(-1, "No se pudo actualizar el estado de instancia");
         }
     }
 
@@ -791,7 +783,7 @@ public class OciServiceImpl implements IOciService {
     public void terminateInstance(TerminateInstanceParams params) {
         String code = (String) customCache.get(CommonUtils.TERMINATE_INSTANCE_PREFIX + params.getInstanceId());
         if (!params.getCaptcha().equals(code)) {
-            throw new OciException(-1, "无效的验证码");
+            throw new OciException(-1, "Código de verificación no válido");
         }
 
         stopTask(CommonUtils.CHANGE_IP_TASK_PREFIX + params.getInstanceId());
@@ -808,7 +800,7 @@ public class OciServiceImpl implements IOciService {
             } catch (Exception e) {
                 log.error("用户:[{}],区域:[{}] 终止实例失败,错误详情:[{}]",
                         sysUserDTO.getUsername(), sysUserDTO.getOciCfg().getRegion(), e.getLocalizedMessage());
-                throw new OciException(-1, "终止实例失败");
+                throw new OciException(-1, "No se pudo terminar la instancia");
             }
         });
         customCache.remove(CommonUtils.TERMINATE_INSTANCE_PREFIX + params.getInstanceId());
@@ -831,7 +823,7 @@ public class OciServiceImpl implements IOciService {
             log.info(message);
             sysService.sendMessage(message);
         } catch (Exception e) {
-            throw new OciException(-1, "发送验证码失败");
+            throw new OciException(-1, "No se pudo enviar el código");
         }
     }
 
@@ -955,7 +947,7 @@ public class OciServiceImpl implements IOciService {
         Optional.ofNullable(userService.getOne(new LambdaQueryWrapper<OciUser>()
                 .eq(OciUser::getUsername, params.getUpdateCfgName()))).ifPresent(user -> {
             if (!user.getId().equals(params.getCfgId())) {
-                throw new OciException(-1, "配置名称:【" + params.getUpdateCfgName() + "】已存在");
+                throw new OciException(-1, "El nombre de configuración «" + params.getUpdateCfgName() + "» ya existe");
             }
         });
 
@@ -1041,8 +1033,8 @@ public class OciServiceImpl implements IOciService {
             }
 
             // 避免重复生成密钥
-            File privateKey = new File("/root/.ssh/id_rsa");
-            File publicKey = new File("/root/.ssh/id_rsa.pub");
+            File privateKey = new File(System.getProperty("user.home") + "/.ssh/id_rsa");
+            File publicKey = new File(System.getProperty("user.home") + "/.ssh/id_rsa.pub");
 
             if (!privateKey.exists() || !publicKey.exists()) {
                 // 构造命令：生成无密码 SSH 密钥
@@ -1050,7 +1042,7 @@ public class OciServiceImpl implements IOciService {
                         "ssh-keygen",
                         "-t", "rsa",
                         "-b", "4096",
-                        "-f", "/root/.ssh/id_rsa",
+                        "-f", System.getProperty("user.home") + "/.ssh/id_rsa",
                         "-N", "");
                 builder.redirectErrorStream(true); // 合并 stdout 和 stderr
                 Process process = builder.start();
@@ -1116,7 +1108,7 @@ public class OciServiceImpl implements IOciService {
             return resStr;
         } catch (Exception e) {
             log.error("开启 VNC 失败", e);
-            throw new OciException(-1, "开启VNC失败", e);
+            throw new OciException(-1, "No se pudo iniciar VNC", e);
         }
     }
 
@@ -1145,7 +1137,7 @@ public class OciServiceImpl implements IOciService {
                 if (shapeList.isEmpty() || !shapeList.contains(type)) {
                     log.error("用户:[{}],区域:[{}] 开机失败,该区域可能无法创建AMD实例,用户可开机的机型:[{}]",
                             sysUserDTO.getUsername(), sysUserDTO.getOciCfg().getRegion(), shapeList);
-                    throw new OciException(-1, "当前区域无法创建AMD实例");
+                    throw new OciException(-1, "No se pueden crear instancias AMD en esta región");
                 }
 
                 log.warn("用户:[{}],区域:[{}],实例:[{}] 开始执行自动救援/缩小硬盘任务...",
@@ -1238,7 +1230,7 @@ public class OciServiceImpl implements IOciService {
                 if (!instanceData.isSuccess()) {
                     log.error("用户:[{}],区域:[{}] 创建AMD实例失败", sysUserDTO.getUsername(),
                             sysUserDTO.getOciCfg().getRegion());
-                    throw new OciException(-1, "创建AMD实例失败");
+                    throw new OciException(-1, "No se pudo crear la instancia AMD");
                 }
                 Instance newAmdInstance = instanceData.getInstance();
                 // 等待新实例初始化完成
@@ -1317,14 +1309,14 @@ public class OciServiceImpl implements IOciService {
                 }
                 Vnic vnic = fetcher.getVnicByInstanceId(instanceId);
                 String publicIp = vnic.getPublicIp();
-                log.info("（9/9）🎉 实例启动成功 🎉,公网IP:{},SSH端口:22,SSH账号:root,SSH密码:{}", publicIp, newAmdSshPwd);
+                log.info("（9/9）🎉 实例启动成功 🎉,公网IP:{},SSH端口:22,SSH账号:root,SSH密码:{}", publicIp, "[omitida]");
                 sysService.sendMessage(String.format("【自动救援/缩小硬盘任务】\n\n恭喜！实例自动救援/缩小硬盘成功🎉\n" +
                                 "用户：\t%s\n区域：\t%s\n实例：\t%s\n公网IP：\t%s\nSSH端口：\t22\nSSH账号：\troot\nSSH密码：\t%s\n",
                         sysUserDTO.getUsername(), sysUserDTO.getOciCfg().getRegion(), params.getName(),
                         publicIp, newAmdSshPwd));
             } catch (Exception e) {
                 log.error("自动救援/缩小硬盘失败", e);
-                throw new OciException(-1, "自动救援/缩小硬盘失败,具体原因请查看日志");
+                throw new OciException(-1, "Falló el rescate o la reducción del disco. Consulta los registros");
             }
         });
     }

@@ -14,13 +14,13 @@ import jakarta.validation.constraints.NotBlank;
 @Data
 public class UpdateInstanceStateParams {
 
-    @NotBlank(message = "配置id不能为空")
+    @NotBlank(message = "El ID de configuración es obligatorio")
     private String ociCfgId;
 
-    @NotBlank(message = "实例id不能为空")
+    @NotBlank(message = "El ID de instancia es obligatorio")
     private String instanceId;
 
-    @NotBlank(message = "实例操作不能为空")
+    @NotBlank(message = "La operación de instancia es obligatoria")
     private String action;
 
 }

@@ -19,6 +19,6 @@ import jakarta.validation.constraints.NotBlank;
 @NoArgsConstructor
 public class StopChangeIpParams {
 
-    @NotBlank(message = "实例id不能为空")
+    @NotBlank(message = "El ID de instancia es obligatorio")
     private String instanceId;
 }

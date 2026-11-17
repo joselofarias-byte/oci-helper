@@ -13,10 +13,10 @@ import lombok.Data;
 @Data
 public class CreateNetworkLoadBalancerParams {
 
-    @NotBlank(message = "ociCfgId不能为空")
+    @NotBlank(message = "El ID de configuración OCI es obligatorio")
     private String ociCfgId;
-    @NotBlank(message = "instanceId不能为空")
+    @NotBlank(message = "El ID de instancia es obligatorio")
     private String instanceId;
-    @NotNull(message = "sshPort不能为空")
+    @NotNull(message = "El puerto SSH es obligatorio")
     private Integer sshPort;
 }

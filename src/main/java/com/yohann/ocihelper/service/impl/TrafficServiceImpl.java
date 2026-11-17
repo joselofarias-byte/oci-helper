@@ -63,7 +63,7 @@ public class TrafficServiceImpl implements ITrafficService {
             return rsp;
         } catch (Exception e) {
             log.error("获取数据失败", e);
-            throw new OciException(-1, "获取数据失败：" + e.getMessage());
+            throw new OciException(-1, "No se pudieron obtener los datos: " + e.getMessage());
         }
     }
 
@@ -91,14 +91,14 @@ public class TrafficServiceImpl implements ITrafficService {
                             return Tuple2.of(x.getRegionName(), instances);
                         } catch (Exception e) {
                             log.error("获取区域实例失败", e);
-                            throw new OciException(-1, "获取区域实例失败：" + e.getMessage());
+                            throw new OciException(-1, "No se pudieron obtener las instancias de la región: " + e.getMessage());
                         }
                     })
                     .collect(Collectors.toMap(Tuple2::getFirst, Tuple2::getSecond)));
             return rsp;
         } catch (Exception e) {
             log.error("获取区域失败", e);
-            throw new OciException(-1, "获取区域失败：" + e.getMessage());
+            throw new OciException(-1, "No se pudieron obtener las regiones: " + e.getMessage());
         }
     }
 
@@ -145,7 +145,7 @@ public class TrafficServiceImpl implements ITrafficService {
             return rsp;
         } catch (Exception e) {
             log.error("获取区域实例失败", e);
-            throw new OciException(-1, "获取区域实例失败：" + e.getMessage());
+            throw new OciException(-1, "No se pudieron obtener las instancias de la región: " + e.getMessage());
         }
     }
 
@@ -163,7 +163,7 @@ public class TrafficServiceImpl implements ITrafficService {
                     .collect(Collectors.toList());
         } catch (Exception e) {
             log.error("获取区域实例vnic失败", e);
-            throw new OciException(-1, "获取区域实例vnic失败：" + e.getMessage());
+            throw new OciException(-1, "No se pudieron obtener las VNIC de la región: " + e.getMessage());
         }
     }
 

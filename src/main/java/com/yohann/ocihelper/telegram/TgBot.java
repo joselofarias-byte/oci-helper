@@ -116,7 +116,7 @@ public class TgBot implements LongPollingSingleThreadUpdateConsumer {
                                     .header("Proxy-Authorization", credential)
                                     .build()
                     );
-                    log.info("Telegram 已配置带认证 HTTP 代理：{}://{}:{}@{}:{}", scheme, username, password, host, port);
+                    log.info("Telegram 已配置带认证 HTTP 代理：{}://{}:{}@{}:{}", scheme, "[omitido]", "[omitida]", host, port);
                 } else {
                     log.info("Telegram 已配置无认证 HTTP 代理：{}", proxyUrl);
                 }
